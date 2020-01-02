@@ -17,11 +17,11 @@ const Wrapper = styled.div`
 function App() {
   const defaultChord = {
     tone: 'C',
-    mode: 0,
+    mode: 0, //major
     interval: 0
   }
 
-  const [List, setList] = useState([defaultChord]);
+  const [list, setList] = useState([defaultChord]);
   const maxChords = 12;
 
   const fixMode = (val) => {
@@ -29,16 +29,16 @@ function App() {
   }
 
   const addChord = () => {
-    if (List.length < maxChords) {
+    if (list.length < maxChords) {
       setList([
-        ...List, defaultChord
+        ...list, defaultChord
       ])
     }
   }
 
   const deleteChord = () => {
-    if (List.length > 1) {
-      setList(List.filter((_, i) => i !== List.length-1))
+    if (list.length > 1) {
+      setList(list.slice(0,-1))
     }
   }
 
@@ -47,7 +47,7 @@ function App() {
       <Wrapper>
         <Header />
         <Controls fixedMode={fixMode} fixedKey={fixMode} />
-        {List.map((chord, i) => (
+        {list.map((chord, i) => (
           <Chord tone={chord.tone} key={i} mode={chord.mode} interval={chord.interval} />
         ))}
       </Wrapper>

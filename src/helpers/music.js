@@ -22,7 +22,18 @@ export const toneNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 
 export const calculateChord = (key, mode, interval) => {
   let tone = toneNames.findIndex((element) => element === key);
   let note = toneNames[checkifHigherThanTwelve(tone + modes[mode][interval][0])];
-  return note += modes[mode][interval][1];
+  return `${note}${modes[mode][interval][1]}`;
+}
+
+export const getChordInScale = (key, mode) => {
+  let list = [];
+
+  modes[mode].map(interval => {
+    let tone = toneNames.findIndex((element) => element === key);
+    let note = toneNames[checkifHigherThanTwelve(tone + interval[0])];
+    return list.push(`${note}${interval[1]} `);
+  })
+  return list;
 }
 
 const checkifHigherThanTwelve = (val) => {
@@ -37,5 +48,6 @@ export default {
   intervalNames,
   modeNames,
   toneNames,
-  calculateChord
+  calculateChord,
+  getChordInScale
 }

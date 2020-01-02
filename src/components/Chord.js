@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import styled from 'styled-components';
 
-import { intervalNames, modeNames, toneNames, calculateChord } from '../helpers/music'
+import { intervalNames, modeNames, toneNames, calculateChord, getChordInScale } from '../helpers/music'
 
 const Container = styled.div`
   font-size: .7em;
@@ -63,6 +63,7 @@ const ChordsInScale = styled.div`
     color: var(--white);
     padding: 5px;
     text-align: center;
+    font-size: .8em;
 `
 
 const Chord = (props) => {
@@ -74,21 +75,25 @@ const Chord = (props) => {
   const [chordInterval, setChordInterval] = useState(props.interval);
   //Current chord
   const [chord, setChord] = useState(calculateChord(props.tone, props.mode, props.interval));
+  //Chord list
+  const [chordList, setChordList] = useState(getChordInScale(props.tone,props.mode));
 
   //TODO: Find out if there's a better way to do this
   const changeKey = (e) => {
     setChordTone(e.target.value);
     setChord(calculateChord(e.target.value,chordMode,chordInterval));
-  }
-
-  const changeInterval = (e) => {
-    setChordInterval(e.target.value);
-    setChord(calculateChord(chordTone,chordMode,e.target.value));
+    setChordList(getChordInScale(e.target.value,chordMode));
   }
 
   const changeMode = (e) => {
     setChordMode(e.target.value);
     setChord(calculateChord(chordTone,e.target.value,chordInterval));
+    setChordList(getChordInScale(chordTone,e.target.value));
+  }
+
+  const changeInterval = (e) => {
+    setChordInterval(e.target.value);
+    setChord(calculateChord(chordTone,chordMode,e.target.value));
   }
 
   return (
@@ -129,7 +134,7 @@ const Chord = (props) => {
       </Wrapper>
 
       <ChordsInScale>
-        C Dm Em F G Am Bdim
+        {chordList}
       </ChordsInScale>
     </Container>)
 }
