@@ -6,8 +6,9 @@ import del from '../img/delete.svg';
 
 const Container = styled.div`
   position: fixed;
-  bottom: 0;
+  bottom: -10px;
   min-width: 100%;
+  min-height: 10vh;
 `
 
 const Wrapper = styled.div`
@@ -32,7 +33,7 @@ const Toolbar = (props) => {
         <button onClick={props.addChord}>
           <img src={add} alt="Add chord" />
         </button>
-        <button onClick={() => console.log('Delete')}>
+        <button onClick={props.deleteChord}>
           <img src={del} alt="Delete chord" />
         </button>
       </Wrapper>

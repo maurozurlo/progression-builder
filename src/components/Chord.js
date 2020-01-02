@@ -23,7 +23,7 @@ const Wrapper = styled.div`
   display: grid;
   background-color: var(--black);
   color: var(--white);
-  grid-template-columns: repeat(4,auto);
+  grid-template-columns: 1fr 2fr 1fr 1fr;
   padding: 5px 0;
 `
 const InputContainer = styled.div`
@@ -54,7 +54,6 @@ const GeneratedChord = styled.span`
   border-radius: 5px;
   border: 2px solid var(--darker);
   justify-content: center;
-  /* TODO: This doesn't look completely right */
   width: 70%;
   padding: 8px;
 `;
