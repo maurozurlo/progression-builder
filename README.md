@@ -17,7 +17,8 @@ You will also see any lint errors in the console.
 
 ### How to Use the Thing
 Progression Builder (from now on, will be refer to as PB), helps you build musical progressions by showing you the chords corresponding to each key/scale/interval.<br />
-[https://www.musictheory.net/lessons/23](This might help you understand what on earth is going on)
+[https://www.musictheory.net/lessons/23](This might help you understand what on earth is going on)<br />
+Clicking the name of a chord shows you the notes it consists of.
 
 
 ### FAQ
@@ -34,3 +35,5 @@ Also I really like the design of this thing.
 
 elMiauro was here
 
+### Demo
+[https://progression-builder.netlify.com](Try me here)

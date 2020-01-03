@@ -2,7 +2,7 @@
 export const intervalNames = ['I (T)', 'II (SD)', 'III (T)', 'IV (SD)', 'V (D)', 'VI (T)', 'VII (D)'];
 
 //Modes
-export const modeNames = ["Ionian (Major)", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian"];
+export const modeNames = ["Ionian (Major)", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian (Minor)", "Locrian"];
 //Modes are saved as multidimensional arrays, where each interval has two values:
 //[0] Semitones from the root
 //[1] Quality of the chord
@@ -36,6 +36,52 @@ export const getChordInScale = (key, mode) => {
   return list;
 }
 
+export const getNotesInChord = (chord) =>{
+  let list = [];
+  //Intervals
+  const majorChord = [0,4,7];
+  const minorChord = [0,3,7];
+  const dimChord = [0,3,6,9];
+  //Get Tonic of chord
+  let toneInWords = chord[0];
+  let isSharp = false;
+  if(chord[1] === '#'){
+    toneInWords += '#';
+    isSharp = true;
+  };
+  //Get quality of the chord
+  let qualityNotes = [];
+  //This ternary checks if the Chord is sharp, in which case we should look for the third character of the string and not the second
+  let arrayIndex = isSharp ? 2 : 1;
+     switch(chord[arrayIndex]){
+    case undefined:
+      qualityNotes = majorChord;
+      break;
+    case 'm':
+      qualityNotes = minorChord;
+      break;
+    case 'd':
+      qualityNotes = dimChord;
+      break;
+    default:
+      qualityNotes = majorChord;
+  }
+  //Get array value of root
+  let tone = toneNames.findIndex((element) => element === toneInWords);
+  //Map through the intervals to get the note names in a list
+  qualityNotes.forEach(interval => {
+    list.push(toneNames[checkifHigherThanTwelve(tone + interval)]);
+  });
+  //Get all the notes and turn them into a string
+  let formattedString = '';
+  //Map through the list of notes and only add a space if it's not the last note of the list
+  list.forEach((note, i) => {
+    i !== list.length-1 ? formattedString += `${note} ` : formattedString += `${note}`;
+  })
+  //Return the string
+  return formattedString;
+}
+
 const checkifHigherThanTwelve = (val) => {
   if (val > 11) {
     val -= 12;
@@ -49,5 +95,6 @@ export default {
   modeNames,
   toneNames,
   calculateChord,
-  getChordInScale
+  getChordInScale,
+  getNotesInChord
 }

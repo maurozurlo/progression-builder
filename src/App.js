@@ -20,9 +20,11 @@ function App() {
     mode: 0, //major
     interval: 0
   }
-
+  //Chord list
   const [list, setList] = useState([defaultChord]);
   const maxChords = 12;
+  //
+
 
   const fixMode = (val) => {
     console.log(val);

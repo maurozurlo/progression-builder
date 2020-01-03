@@ -5,7 +5,8 @@
   --darker: #2f2d3e;
   --white: #ffffff;
   --black: #231F20;
-  --dark-with-transparency: rgba(199, 197, 216, 0.8);
+  --tooltip: rgba(181, 178, 210, 0.9);
+  --dark-with-transparency: rgba(184, 179, 233, 0.8);
   --max-width: 480px;
 }
 

@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import styled from 'styled-components';
 
-import { intervalNames, modeNames, toneNames, calculateChord, getChordInScale } from '../helpers/music'
+import * as theory from '../helpers/music'
+import Tooltip from './Tooltip'
 
 const Container = styled.div`
   font-size: .7em;
@@ -56,6 +57,7 @@ const GeneratedChord = styled.span`
   justify-content: center;
   width: 70%;
   padding: 8px;
+  position: relative;
 `;
 
 const ChordsInScale = styled.div`
@@ -74,26 +76,45 @@ const Chord = (props) => {
   //Interval
   const [chordInterval, setChordInterval] = useState(props.interval);
   //Current chord
-  const [chord, setChord] = useState(calculateChord(props.tone, props.mode, props.interval));
+  const [chord, setChord] = useState(theory.calculateChord(props.tone, props.mode, props.interval));
   //Chord list
-  const [chordList, setChordList] = useState(getChordInScale(props.tone,props.mode));
-
-  //TODO: Find out if there's a better way to do this
-  const changeKey = (e) => {
-    setChordTone(e.target.value);
-    setChord(calculateChord(e.target.value,chordMode,chordInterval));
-    setChordList(getChordInScale(e.target.value,chordMode));
+  const [chordList, setChordList] = useState(theory.getChordInScale(props.tone,props.mode));
+  //Chord notes
+  const [notesInChord, setNotesInChord] = useState(theory.getNotesInChord(chord));
+  //Show tooltip
+  const [showTooltip,setShowTooltip] = useState(false);
+  //Find out if there's a cleaner way to do this
+  const updateChord = (e) => {
+    let newChord;
+    switch(e.target.title){
+      case 'key':
+        newChord = theory.calculateChord(e.target.value,chordMode,chordInterval);
+        setChordTone(e.target.value);
+        setChordList(theory.getChordInScale(e.target.value,chordMode));
+      break;
+      case 'mode':
+        newChord = theory.calculateChord(chordTone,e.target.value,chordInterval);
+        setChordMode(e.target.value);
+        setChordList(theory.getChordInScale(chordTone,e.target.value));
+      break;
+      case 'interval':
+        newChord = theory.calculateChord(chordTone,chordMode,e.target.value);
+        setChordInterval(e.target.value);
+      break;
+      default:
+        newChord = 'ERR';
+      break;
+    }
+    setChord(newChord);
+    updateNotes(newChord);
   }
 
-  const changeMode = (e) => {
-    setChordMode(e.target.value);
-    setChord(calculateChord(chordTone,e.target.value,chordInterval));
-    setChordList(getChordInScale(chordTone,e.target.value));
+  const updateNotes = (chord) =>{
+    setNotesInChord(theory.getNotesInChord(chord))
   }
 
-  const changeInterval = (e) => {
-    setChordInterval(e.target.value);
-    setChord(calculateChord(chordTone,chordMode,e.target.value));
+  const handleClick = () => {
+    setShowTooltip(!showTooltip);
   }
 
   return (
@@ -101,8 +122,8 @@ const Chord = (props) => {
       <Wrapper>
         <InputContainer>
           <Title>KEY</Title>
-          <SelectInput onChange={changeKey} value={chordTone}>
-            {toneNames.map((tone, i) => (
+          <SelectInput title='key' onChange={updateChord} value={chordTone}>
+            {theory.toneNames.map((tone, i) => (
               <option key={'t' + i}  value={tone}>{tone}</option>
             ))}
           </SelectInput>
@@ -110,8 +131,8 @@ const Chord = (props) => {
 
         <InputContainer>
           <Title>MODE</Title>
-          <SelectInput onChange={changeMode} value={chordMode}>
-            {modeNames.map((mode, i) => (
+          <SelectInput title='mode' onChange={updateChord} value={chordMode}>
+            {theory.modeNames.map((mode, i) => (
               <option key={'m' + i} value={i}>{mode}</option>
             ))}
           </SelectInput>
@@ -119,8 +140,8 @@ const Chord = (props) => {
 
         <InputContainer>
           <Title>INTERVAL</Title>
-          <SelectInput onChange={changeInterval}  value={chordInterval}>
-            {intervalNames.map((interval, i) => (
+          <SelectInput title='interval' onChange={updateChord}  value={chordInterval}>
+            {theory.intervalNames.map((interval, i) => (
               <option key={'i' + i}  value={i}>{interval}</option>
             ))}
           </SelectInput>
@@ -128,7 +149,10 @@ const Chord = (props) => {
 
         <InputContainer>
           <Title>CHORD</Title>
-          <GeneratedChord>{chord}</GeneratedChord>
+          
+          <GeneratedChord onClick={() => handleClick()}>
+            {showTooltip ? <Tooltip chordNotes={notesInChord}/> : undefined}
+             {chord}</GeneratedChord>
         </InputContainer>
 
       </Wrapper>
