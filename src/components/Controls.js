@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import styled from 'styled-components';
+import { modeNames } from '../helpers/music'
 
 const MainControls = styled.div`
 	display: flex;
@@ -34,25 +35,25 @@ const Controls = (props) => {
 
   const editClassK = () => {
     !pressedKey ? setPressedKey(true) : setPressedKey(false);
-    props.fixedKey(!pressedKey);
+    props.keyClick(!pressedKey);
   }
   //Mode
   const [pressedMode, setPressedMode] = useState(false);
 
   const editClassM = () => {
     !pressedMode ? setPressedMode(true) : setPressedMode(false);
-    props.fixedMode(!pressedMode);
+    props.modeClick(!pressedMode);
   }
 
   return (
     <MainControls>
       <button onClick={editClassK} 
-              className={pressedKey ? 'pressed' : undefined}>
-      <strong>Key:</strong> {pressedKey ?  'Fixed' : 'Mixed'}
+              className={props.fixedKey !== -1 ? 'pressed' : undefined}>
+      <strong>Key:</strong> {props.fixedKey !== -1 ?  props.fixedKey : 'Mixed'}
 				</button>
     <button  onClick={editClassM} 
-              className={pressedMode ? 'pressed' : undefined}>
-      <strong>Mode:</strong> {pressedMode ?  'Fixed' : 'Mixed'}
+              className={props.fixedMode !== -1 ? 'pressed' : undefined}>
+      <strong>Mode:</strong> {props.fixedMode !== -1 ?  modeNames[props.fixedMode] : 'Mixed'}
 				</button>
         </MainControls>)
 }

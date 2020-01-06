@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 //Components
 import Header from './components/Header';
+import Modal from './components/Modal';
 import Controls from './components/Controls';
 import Chord from './components/Chord';
 import Toolbar from './components/Toolbar';
@@ -20,16 +21,31 @@ function App() {
     mode: 0, //major
     interval: 0
   }
+  
+  //Fixed Key
+  //-1: Key is not fixed
+  //0-11: toneNames[]
+  const [fixedKey, setFixedKey] = useState(-1);
+  //Fixed Mode
+  const [fixedMode, setFixedMode] = useState(-1);
+  //Modal
+  //-1: Closed modal
+  //0: Fix key
+  //1: Fix mode
+  const [modalState, setModalState ] = useState(-1)
+  const closeModal = () => setModalState(-1);
+  const openModalKey = () => setModalState(0);
+  const openModalMode = () => setModalState(1);
+  
+  const fix = (val) => {
+    closeModal();
+    val[0] === 'key' ? setFixedKey(val[1]) : setFixedMode(val[1]);
+  }
+
   //Chord list
   const [list, setList] = useState([defaultChord]);
   const maxChords = 12;
-  //
-
-
-  const fixMode = (val) => {
-    console.log(val);
-  }
-
+  //Functions
   const addChord = () => {
     if (list.length < maxChords) {
       setList([
@@ -46,9 +62,11 @@ function App() {
 
   return (
     <>
+      {modalState === -1 ? null : 
+      <Modal close={closeModal} value={modalState} fix={fix}></Modal>}
       <Wrapper>
         <Header />
-        <Controls fixedMode={fixMode} fixedKey={fixMode} />
+        <Controls modeClick={openModalMode} keyClick={openModalKey} fixedMode={fixedMode} fixedKey={fixedKey}/>
         {list.map((chord, i) => (
           <Chord tone={chord.tone} key={i} mode={chord.mode} interval={chord.interval} />
         ))}

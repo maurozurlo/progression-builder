@@ -151,7 +151,7 @@ const Chord = (props) => {
           <Title>CHORD</Title>
           
           <GeneratedChord onClick={() => handleClick()}>
-            {showTooltip ? <Tooltip chordNotes={notesInChord}/> : undefined}
+            <Tooltip chordNotes={notesInChord} pop={showTooltip}/>
              {chord}</GeneratedChord>
         </InputContainer>
 
