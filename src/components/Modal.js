@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 import React, { useState } from 'react'
 
-import {toneNames, modeNames} from '../helpers/music'
+import { toneNames, modeNames } from '../helpers/music'
 
 const ModalContainer = styled.div`
   z-index: 999;
@@ -97,7 +97,8 @@ const SelectInput = styled.select`
 const Modal = (props) => {
   //Input
   const handleInput = (e) => {
-    switch(e.target.title){
+    
+    switch (e.target.title) {
       case 'mode':
         setFixedMode(e.target.value);
         break;
@@ -109,36 +110,38 @@ const Modal = (props) => {
     }
   }
 
-  const [fixedKey, setFixedKey] = useState(-1);
-  const [fixedMode, setFixedMode] = useState(-1);
+  const [fixedKey, setFixedKey] = useState(props.fixedKey);
+  const [fixedMode, setFixedMode] = useState(props.fixedMode);
 
   const returnEitherKeyOrMode = () => {
     let val = [];
-    props.value === 0 ? val = ['key',fixedKey] : val = ['mode',fixedMode];
+    props.value === 0 ? val = ['key', fixedKey] : val = ['mode', Number(fixedMode)];
     return val;
   }
+
   
+
   return (
     <ModalContainer>
-      
+
       <ModalCard>
         {/* Fixed Mode */}
         <InputContainer>
           <label>Fixed {props.value === 0 ? 'Key' : 'Mode'}</label>
           {
             props.value === 0 ? (
-          <SelectInput title='key' onChange={handleInput} autoFocus>
-            <option value={-1}>None</option>
-            {toneNames.map((tone, i) => (
-              <option key={'t' + i}  value={tone}>{tone}</option>
-            ))}
-          </SelectInput>) :
-          <SelectInput title='mode' onChange={handleInput}>
-          <option value={-1}>Mixed</option>
-            {modeNames.map((mode, i) => (
-              <option key={'m' + i} value={i}>{mode}</option>
-            ))}
-          </SelectInput>
+              <SelectInput title='key' onChange={handleInput} value={fixedKey} autoFocus>
+                <option value={-1}>Mixed</option>
+                {toneNames.map((tone, i) => (
+                  <option key={'t' + i} value={tone}>{tone}</option>
+                ))}
+              </SelectInput>) :
+              <SelectInput title='mode' onChange={handleInput} value={fixedMode} autoFocus>
+                <option value={-1}>Mixed</option>
+                {modeNames.map((mode, i) => (
+                  <option key={'m' + i} value={i}>{mode}</option>
+                ))}
+              </SelectInput>
           }
         </InputContainer>
         {/* Fixed Key */}

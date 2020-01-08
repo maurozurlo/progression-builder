@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components';
 
 import * as theory from '../helpers/music'
@@ -46,6 +46,10 @@ const SelectInput = styled.select`
   text-align-last: center;
   appearance: none;
   padding: 8px;
+  &[disabled]{
+    background-color: var(--primary);
+    color: var(--dark);
+  }
 `;
 const GeneratedChord = styled.span`
   display: inline-flex;
@@ -78,38 +82,64 @@ const Chord = (props) => {
   //Current chord
   const [chord, setChord] = useState(theory.calculateChord(props.tone, props.mode, props.interval));
   //Chord list
-  const [chordList, setChordList] = useState(theory.getChordInScale(props.tone,props.mode));
+  const [chordList, setChordList] = useState(theory.getChordInScale(props.tone, props.mode));
   //Chord notes
   const [notesInChord, setNotesInChord] = useState(theory.getNotesInChord(chord));
   //Show tooltip
-  const [showTooltip,setShowTooltip] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
   //Find out if there's a cleaner way to do this
+
+  useEffect(() => {
+    updateChord()
+  })
+
   const updateChord = (e) => {
     let newChord;
-    switch(e.target.title){
-      case 'key':
-        newChord = theory.calculateChord(e.target.value,chordMode,chordInterval);
-        setChordTone(e.target.value);
-        setChordList(theory.getChordInScale(e.target.value,chordMode));
-      break;
-      case 'mode':
-        newChord = theory.calculateChord(chordTone,e.target.value,chordInterval);
-        setChordMode(e.target.value);
-        setChordList(theory.getChordInScale(chordTone,e.target.value));
-      break;
-      case 'interval':
-        newChord = theory.calculateChord(chordTone,chordMode,e.target.value);
-        setChordInterval(e.target.value);
-      break;
-      default:
-        newChord = 'ERR';
-      break;
+    
+      if(typeof e !== 'undefined' && typeof e === 'object'){
+      switch (e.target.title) {
+        case 'key':
+          newChord = theory.calculateChord(e.target.value, chordMode, chordInterval);
+          setChordTone(e.target.value);
+          setChordList(theory.getChordInScale(e.target.value, chordMode));
+          break;
+        case 'mode':
+          newChord = theory.calculateChord(chordTone, e.target.value, chordInterval);
+          setChordMode(e.target.value);
+          setChordList(theory.getChordInScale(chordTone, e.target.value));
+          break;
+        case 'interval':
+          newChord = theory.calculateChord(chordTone, chordMode, e.target.value);
+          setChordInterval(e.target.value);
+          break;
+        default:
+          newChord = undefined;
+          break;
+      }
+      reRenderChord(newChord);
     }
-    setChord(newChord);
-    updateNotes(newChord);
+    //Fix Key
+    if(props.fixedKey !== -1 && chordTone !== props.fixedKey){
+      newChord = theory.calculateChord(props.fixedKey,chordMode,chordInterval);
+      setChordList(theory.getChordInScale(props.fixedKey,chordMode));
+      setChordTone(props.fixedKey);
+      reRenderChord(newChord);
+    }
+    //Fix Mode
+    if(props.fixedMode !== -1 && chordMode !== props.fixedMode){
+      newChord = theory.calculateChord(chordTone, props.fixedMode, chordInterval);
+      setChordMode(props.fixedMode);
+      setChordList(theory.getChordInScale(chordTone, props.fixedMode));
+      reRenderChord(newChord);
+    }
   }
 
-  const updateNotes = (chord) =>{
+  const reRenderChord = (chord) =>{
+    setChord(chord);
+    updateNotes(chord);
+  }
+
+  const updateNotes = (chord) => {
     setNotesInChord(theory.getNotesInChord(chord))
   }
 
@@ -122,16 +152,25 @@ const Chord = (props) => {
       <Wrapper>
         <InputContainer>
           <Title>KEY</Title>
-          <SelectInput title='key' onChange={updateChord} value={chordTone}>
+          <SelectInput
+            title='key'
+            onChange={updateChord}
+            value={chordTone}
+            disabled={props.fixedKey !== -1}
+          >
             {theory.toneNames.map((tone, i) => (
-              <option key={'t' + i}  value={tone}>{tone}</option>
+              <option key={'t' + i} value={tone}>{tone}</option>
             ))}
           </SelectInput>
         </InputContainer>
 
         <InputContainer>
           <Title>MODE</Title>
-          <SelectInput title='mode' onChange={updateChord} value={chordMode}>
+          <SelectInput title='mode'
+            onChange={updateChord}
+            value={chordMode}
+            disabled={props.fixedMode !== -1}
+          >
             {theory.modeNames.map((mode, i) => (
               <option key={'m' + i} value={i}>{mode}</option>
             ))}
@@ -140,19 +179,23 @@ const Chord = (props) => {
 
         <InputContainer>
           <Title>INTERVAL</Title>
-          <SelectInput title='interval' onChange={updateChord}  value={chordInterval}>
+          <SelectInput title='interval' onChange={updateChord} value={chordInterval}>
             {theory.intervalNames.map((interval, i) => (
-              <option key={'i' + i}  value={i}>{interval}</option>
+              <option key={'i' + i} value={i}>{interval}</option>
             ))}
           </SelectInput>
         </InputContainer>
 
         <InputContainer>
           <Title>CHORD</Title>
-          
+
           <GeneratedChord onClick={() => handleClick()}>
-            <Tooltip chordNotes={notesInChord} pop={showTooltip}/>
-             {chord}</GeneratedChord>
+            <Tooltip
+            chordNotes={notesInChord}
+            pop={showTooltip}
+            />
+            {chord}
+            </GeneratedChord>
         </InputContainer>
 
       </Wrapper>

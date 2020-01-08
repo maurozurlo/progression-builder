@@ -17,11 +17,11 @@ const Wrapper = styled.div`
 
 function App() {
   const defaultChord = {
-    tone: 'C',
-    mode: 0, //major
-    interval: 0
+    tone: 'C',      //C
+    mode: 0,     // Ionian (major)
+    interval: 0 // I
   }
-  
+
   //Fixed Key
   //-1: Key is not fixed
   //0-11: toneNames[]
@@ -32,11 +32,11 @@ function App() {
   //-1: Closed modal
   //0: Fix key
   //1: Fix mode
-  const [modalState, setModalState ] = useState(-1)
+  const [modalState, setModalState] = useState(-1)
   const closeModal = () => setModalState(-1);
   const openModalKey = () => setModalState(0);
   const openModalMode = () => setModalState(1);
-  
+
   const fix = (val) => {
     closeModal();
     val[0] === 'key' ? setFixedKey(val[1]) : setFixedMode(val[1]);
@@ -56,22 +56,46 @@ function App() {
 
   const deleteChord = () => {
     if (list.length > 1) {
-      setList(list.slice(0,-1))
+      setList(list.slice(0, -1))
     }
   }
 
   return (
+    
     <>
-      {modalState === -1 ? null : 
-      <Modal close={closeModal} value={modalState} fix={fix}></Modal>}
+      {modalState === -1 ? null :
+        <Modal 
+        close={closeModal}
+        value={modalState}
+        fix={fix}
+        fixedKey={fixedKey}
+        fixedMode={fixedMode}
+        ></Modal>}
       <Wrapper>
         <Header />
-        <Controls modeClick={openModalMode} keyClick={openModalKey} fixedMode={fixedMode} fixedKey={fixedKey}/>
+        <Controls
+        modeClick={openModalMode}
+        keyClick={openModalKey}
+        fixedMode={fixedMode}
+        fixedKey={fixedKey}
+        />
+
         {list.map((chord, i) => (
-          <Chord tone={chord.tone} key={i} mode={chord.mode} interval={chord.interval} />
+
+          <Chord
+            tone={chord.tone}
+            key={i}
+            mode={fixedMode === -1 ? chord.mode : fixedMode}
+            interval={chord.interval}
+            fixedMode={fixedMode}
+            fixedKey={fixedKey} />
         ))}
+
       </Wrapper>
-      <Toolbar addChord={addChord} deleteChord={deleteChord}/>
+
+      <Toolbar
+        addChord={addChord}
+        deleteChord={deleteChord} />
     </>
   );
 }

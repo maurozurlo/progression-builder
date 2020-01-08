@@ -89,6 +89,10 @@ const checkifHigherThanTwelve = (val) => {
   return val;
 }
 
+export const getIndexOfNote = (val) =>{
+  let tone = toneNames.findIndex((element) => element === val);
+  return tone;
+}
 
 export default {
   intervalNames,
