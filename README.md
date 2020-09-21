@@ -36,4 +36,4 @@ Also I really like the design of this thing.
 elMiauro was here
 
 ### Demo
-[https://progression-builder.netlify.com](Try me here)
+[https://progression-builder.netlify.com] (Try me here)
