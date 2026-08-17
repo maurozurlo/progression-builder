@@ -8,6 +8,8 @@ import Toolbar from './components/Toolbar';
 import Drawer from './components/Drawer';
 import SamplerDrawer from './components/SamplerDrawer';
 import GeneratorDrawer from './components/GeneratorDrawer';
+import BassDrawer from './components/BassDrawer';
+import DrumDrawer from './components/DrumDrawer';
 import {
   ProgressionProvider,
   useProgressionContext,
@@ -19,8 +21,12 @@ const Layout = () => {
     modalState,
     samplerOpen,
     generatorOpen,
+    bassOpen,
+    drumsOpen,
     toggleSampler,
     toggleGenerator,
+    toggleBass,
+    toggleDrums,
   } = useProgressionContext();
 
   return (
@@ -46,6 +52,14 @@ const Layout = () => {
 
         <Drawer open={samplerOpen} onClose={toggleSampler} title="Sampler">
           <SamplerDrawer />
+        </Drawer>
+
+        <Drawer open={bassOpen} onClose={toggleBass} title="Bass">
+          <BassDrawer />
+        </Drawer>
+
+        <Drawer open={drumsOpen} onClose={toggleDrums} title="Drums">
+          <DrumDrawer />
         </Drawer>
       </div>
 

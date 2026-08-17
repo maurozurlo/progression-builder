@@ -1,0 +1,19 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.75em;
+}
+
+.field select {
+  background-color: var(--dark);
+  color: var(--light);
+  border-radius: 5px;
+  border: 2px solid var(--darker);
+  padding: 6px;
+}
+
+.status {
+  margin-top: 1em;
+  color: var(--light);
+  opacity: 0.7;
+}

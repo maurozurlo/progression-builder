@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { noteToMidiNumber, writeVarLen, buildMidiBytes } from './midi';
+import {
+  noteToMidiNumber,
+  writeVarLen,
+  buildMidiBytes,
+  buildMultiTrackMidiBytes,
+} from './midi';
+import { BassPattern, DrumPattern } from '../types/music';
 
 describe('noteToMidiNumber', () => {
   it('converts middle C (C4) to 60', () => {
@@ -36,5 +42,58 @@ describe('buildMidiBytes', () => {
     expect(String.fromCharCode(...trackChunkStart)).toBe('MTrk');
     //Ends with the end-of-track meta event
     expect(bytes.slice(-3)).toEqual([0xff, 0x2f, 0x00]);
+  });
+});
+
+describe('buildMultiTrackMidiBytes', () => {
+  it('produces a format-1 header with 3 tracks (tempo, chords, bass)', () => {
+    const bassPattern: BassPattern = {
+      id: 'root-only',
+      name: 'Root only',
+      steps: [{ offset: 0, degree: 'root' }],
+    };
+    const bytes = buildMultiTrackMidiBytes(
+      [[{ note: 'C', octave: 4 }]],
+      120,
+      4,
+      {
+        line: [
+          {
+            root: { note: 'C', octave: 2 },
+            third: { note: 'E', octave: 2 },
+            fifth: { note: 'G', octave: 2 },
+            octave: { note: 'C', octave: 3 },
+          },
+        ],
+        pattern: bassPattern,
+      }
+    );
+
+    const header = String.fromCharCode(...bytes.slice(0, 4));
+    expect(header).toBe('MThd');
+    expect(bytes[9]).toBe(1); // format 1
+    expect(bytes[11]).toBe(3); // 3 tracks
+    //Three MTrk chunk headers should be present
+    const asString = String.fromCharCode(...bytes);
+    expect(asString.split('MTrk').length - 1).toBe(3);
+  });
+
+  it('adds a fourth track when a drum pattern is given', () => {
+    const drumPattern: DrumPattern = {
+      id: 'basic-rock',
+      name: 'Basic Rock',
+      steps: [{ offset: 0, voice: 'kick' }],
+    };
+    const bytes = buildMultiTrackMidiBytes(
+      [[{ note: 'C', octave: 4 }]],
+      120,
+      4,
+      undefined,
+      { pattern: drumPattern }
+    );
+
+    expect(bytes[11]).toBe(3); // tempo, chords, drums
+    const asString = String.fromCharCode(...bytes);
+    expect(asString.split('MTrk').length - 1).toBe(3);
   });
 });

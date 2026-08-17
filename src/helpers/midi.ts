@@ -1,4 +1,10 @@
-import { VoicedNote } from '../types/music';
+import {
+  BassChordNotes,
+  BassPattern,
+  DrumPattern,
+  DrumVoice,
+  VoicedNote,
+} from '../types/music';
 
 const noteOrder = [
   'C',
@@ -30,6 +36,7 @@ export const writeVarLen = (value: number): number[] => {
 };
 
 const TICKS_PER_QUARTER = 480;
+const EIGHTH_NOTE_TICKS = TICKS_PER_QUARTER / 2;
 
 interface MidiEvent {
   tick: number;
@@ -38,11 +45,10 @@ interface MidiEvent {
   velocity: number;
 }
 
-export const buildMidiBytes = (
+export const buildChordTrackEvents = (
   chords: VoicedNote[][],
-  bpm: number,
   beatsPerBar: number
-): number[] => {
+): MidiEvent[] => {
   const ticksPerBar = TICKS_PER_QUARTER * beatsPerBar;
   const events: MidiEvent[] = [];
 
@@ -56,47 +62,113 @@ export const buildMidiBytes = (
     });
   });
 
-  //Note-offs before note-ons at the same tick, so a chord repeated in the next bar doesn't overlap itself
-  events.sort((a, b) => a.tick - b.tick || a.status - b.status);
+  return events;
+};
 
-  const microsecondsPerQuarter = Math.round(60000000 / bpm);
-  const trackBytes: number[] = [
-    ...writeVarLen(0),
-    0xff,
-    0x51,
-    0x03,
-    (microsecondsPerQuarter >> 16) & 0xff,
-    (microsecondsPerQuarter >> 8) & 0xff,
-    microsecondsPerQuarter & 0xff,
-  ];
+export const buildBassTrackEvents = (
+  bassLine: BassChordNotes[],
+  pattern: BassPattern,
+  beatsPerBar: number
+): MidiEvent[] => {
+  const ticksPerBar = TICKS_PER_QUARTER * beatsPerBar;
+  const events: MidiEvent[] = [];
+
+  bassLine.forEach((chordNotes, i) => {
+    const barStartTick = i * ticksPerBar;
+    pattern.steps.forEach((step) => {
+      const startTick = barStartTick + Math.round(step.offset * ticksPerBar);
+      const endTick = startTick + EIGHTH_NOTE_TICKS;
+      const note = noteToMidiNumber(chordNotes[step.degree]);
+      events.push({ tick: startTick, status: 0x90, note, velocity: 100 });
+      events.push({ tick: endTick, status: 0x80, note, velocity: 0 });
+    });
+  });
+
+  return events;
+};
+
+//General MIDI percussion key map (channel 10)
+const GM_DRUM_NOTES: Record<DrumVoice, number> = {
+  kick: 36, // Acoustic Bass Drum
+  snare: 38, // Acoustic Snare
+  hihat: 42, // Closed Hi-Hat
+};
+
+const DRUM_CHANNEL = 9;
+
+export const buildDrumTrackEvents = (
+  pattern: DrumPattern,
+  barCount: number,
+  beatsPerBar: number
+): MidiEvent[] => {
+  const ticksPerBar = TICKS_PER_QUARTER * beatsPerBar;
+  const events: MidiEvent[] = [];
+
+  for (let i = 0; i < barCount; i++) {
+    const barStartTick = i * ticksPerBar;
+    pattern.steps.forEach((step) => {
+      const startTick = barStartTick + Math.round(step.offset * ticksPerBar);
+      const endTick = startTick + EIGHTH_NOTE_TICKS;
+      const note = GM_DRUM_NOTES[step.voice];
+      events.push({
+        tick: startTick,
+        status: 0x90 | DRUM_CHANNEL,
+        note,
+        velocity: 100,
+      });
+      events.push({
+        tick: endTick,
+        status: 0x80 | DRUM_CHANNEL,
+        note,
+        velocity: 0,
+      });
+    });
+  }
+
+  return events;
+};
+
+//Note-offs before note-ons at the same tick, so a note repeated immediately after doesn't overlap itself
+const sortEvents = (events: MidiEvent[]): MidiEvent[] =>
+  [...events].sort((a, b) => a.tick - b.tick || a.status - b.status);
+
+const trackNameBytes = (name: string): number[] => {
+  const nameBytes = Array.from(name, (c) => c.charCodeAt(0));
+  return [...writeVarLen(0), 0xff, 0x03, ...writeVarLen(nameBytes.length), ...nameBytes];
+};
+
+const buildTrackChunk = (
+  events: MidiEvent[],
+  options?: { name?: string; tempoMicroseconds?: number }
+): number[] => {
+  const trackBytes: number[] = [];
+
+  if (options?.name !== undefined) {
+    trackBytes.push(...trackNameBytes(options.name));
+  }
+
+  if (options?.tempoMicroseconds !== undefined) {
+    trackBytes.push(
+      ...writeVarLen(0),
+      0xff,
+      0x51,
+      0x03,
+      (options.tempoMicroseconds >> 16) & 0xff,
+      (options.tempoMicroseconds >> 8) & 0xff,
+      options.tempoMicroseconds & 0xff
+    );
+  }
 
   let prevTick = 0;
-  events.forEach((event) => {
+  sortEvents(events).forEach((event) => {
     trackBytes.push(...writeVarLen(event.tick - prevTick));
     trackBytes.push(event.status, event.note, event.velocity);
     prevTick = event.tick;
   });
   trackBytes.push(...writeVarLen(0), 0xff, 0x2f, 0x00);
 
-  const header = [
-    0x4d,
-    0x54,
-    0x68,
-    0x64, // 'MThd'
-    0x00,
-    0x00,
-    0x00,
-    0x06, // header length
-    0x00,
-    0x00, // format 0
-    0x00,
-    0x01, // 1 track
-    (TICKS_PER_QUARTER >> 8) & 0xff,
-    TICKS_PER_QUARTER & 0xff,
-  ];
-
   const trackLength = trackBytes.length;
-  const track = [
+  return [
     0x4d,
     0x54,
     0x72,
@@ -107,15 +179,89 @@ export const buildMidiBytes = (
     trackLength & 0xff,
     ...trackBytes,
   ];
+};
 
-  return [...header, ...track];
+const buildHeader = (trackCount: number): number[] => [
+  0x4d,
+  0x54,
+  0x68,
+  0x64, // 'MThd'
+  0x00,
+  0x00,
+  0x00,
+  0x06, // header length
+  0x00,
+  trackCount > 1 ? 0x01 : 0x00, // format 0 (single track) or 1 (multi-track)
+  0x00,
+  trackCount, // track count
+  (TICKS_PER_QUARTER >> 8) & 0xff,
+  TICKS_PER_QUARTER & 0xff,
+];
+
+export const buildMidiBytes = (
+  chords: VoicedNote[][],
+  bpm: number,
+  beatsPerBar: number
+): number[] => {
+  const microsecondsPerQuarter = Math.round(60000000 / bpm);
+  const track = buildTrackChunk(buildChordTrackEvents(chords, beatsPerBar), {
+    name: 'Chords',
+    tempoMicroseconds: microsecondsPerQuarter,
+  });
+  return [...buildHeader(1), ...track];
+};
+
+//Some players treat track 0 of a format-1 file as a conductor track and ignore any notes in it, so
+//tempo gets its own leading track rather than sharing one with the chord notes -- otherwise only the
+//later (bass) track would be heard.
+export const buildMultiTrackMidiBytes = (
+  chords: VoicedNote[][],
+  bpm: number,
+  beatsPerBar: number,
+  bass?: { line: BassChordNotes[]; pattern: BassPattern },
+  drums?: { pattern: DrumPattern }
+): number[] => {
+  const microsecondsPerQuarter = Math.round(60000000 / bpm);
+  const tempoTrack = buildTrackChunk([], {
+    name: 'Tempo',
+    tempoMicroseconds: microsecondsPerQuarter,
+  });
+  const chordTrack = buildTrackChunk(buildChordTrackEvents(chords, beatsPerBar), {
+    name: 'Chords',
+  });
+  const tracks = [tempoTrack, chordTrack];
+
+  if (bass) {
+    tracks.push(
+      buildTrackChunk(
+        buildBassTrackEvents(bass.line, bass.pattern, beatsPerBar),
+        { name: 'Bass' }
+      )
+    );
+  }
+
+  if (drums) {
+    tracks.push(
+      buildTrackChunk(
+        buildDrumTrackEvents(drums.pattern, chords.length, beatsPerBar),
+        { name: 'Drums' }
+      )
+    );
+  }
+
+  return [...buildHeader(tracks.length), ...tracks.flat()];
 };
 
 export const buildMidiBlob = (
   chords: VoicedNote[][],
   bpm: number,
-  beatsPerBar: number
-): Blob =>
-  new Blob([new Uint8Array(buildMidiBytes(chords, bpm, beatsPerBar))], {
-    type: 'audio/midi',
-  });
+  beatsPerBar: number,
+  bass?: { line: BassChordNotes[]; pattern: BassPattern },
+  drums?: { pattern: DrumPattern }
+): Blob => {
+  const bytes =
+    bass || drums
+      ? buildMultiTrackMidiBytes(chords, bpm, beatsPerBar, bass, drums)
+      : buildMidiBytes(chords, bpm, beatsPerBar);
+  return new Blob([new Uint8Array(bytes)], { type: 'audio/midi' });
+};

@@ -1,5 +1,6 @@
 import * as Tone from 'tone';
-import { StrumPattern } from '../types/music';
+import { BassChordNotes, BassPattern, StrumPattern } from '../types/music';
+import { toToneJsPitch } from './pitch';
 
 //Pure helper, kept free of Tone.js so it can be unit tested independent of the audio context
 export const computeStepTimes = (
@@ -33,6 +34,36 @@ export const scheduleProgression = (
     const stepTimes = computeStepTimes(pattern, barSeconds);
     stepTimes.forEach((offsetSeconds) => {
       synth.triggerAttackRelease(notes, '8n', time + offsetSeconds);
+    });
+    chordIndex = (chordIndex + 1) % chords.length;
+  }, '1m');
+
+  loop.start(0);
+  return loop;
+};
+
+export const createBassSynth = (): Tone.PolySynth =>
+  new Tone.PolySynth(Tone.Synth).toDestination();
+
+export const scheduleBassLine = (
+  synth: Tone.PolySynth,
+  chords: BassChordNotes[],
+  pattern: BassPattern,
+  bpm: number,
+  meter: [number, number]
+): Tone.Loop => {
+  Tone.Transport.bpm.value = bpm;
+  Tone.Transport.timeSignature = meter;
+
+  let chordIndex = 0;
+
+  const loop = new Tone.Loop((time) => {
+    if (chords.length === 0) return;
+    const chordNotes = chords[chordIndex];
+    const barSeconds = Tone.Time('1m').toSeconds();
+    pattern.steps.forEach((step) => {
+      const note = toToneJsPitch(chordNotes[step.degree]);
+      synth.triggerAttackRelease(note, '8n', time + step.offset * barSeconds);
     });
     chordIndex = (chordIndex + 1) % chords.length;
   }, '1m');

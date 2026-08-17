@@ -4,11 +4,21 @@ import add from '../img/add.svg';
 import del from '../img/delete.svg';
 import samplerIcon from '../img/sampler.svg';
 import generatorIcon from '../img/generator.svg';
+import bassIcon from '../img/bass.svg';
+import drumIcon from '../img/drum.svg';
 import { useProgressionContext } from '../context/ProgressionContext';
 
 const Toolbar = () => {
-  const { list, maxChords, addChord, removeChord, toggleSampler, toggleGenerator } =
-    useProgressionContext();
+  const {
+    list,
+    maxChords,
+    addChord,
+    removeChord,
+    toggleSampler,
+    toggleGenerator,
+    toggleBass,
+    toggleDrums,
+  } = useProgressionContext();
 
   return (
     <div className={styles.container}>
@@ -24,6 +34,12 @@ const Toolbar = () => {
         </button>
         <button className={styles.triggerButton} onClick={toggleSampler}>
           <img src={samplerIcon} alt="Toggle sampler" />
+        </button>
+        <button className={styles.triggerButton} onClick={toggleBass}>
+          <img src={bassIcon} alt="Toggle bass" />
+        </button>
+        <button className={styles.triggerButton} onClick={toggleDrums}>
+          <img src={drumIcon} alt="Toggle drums" />
         </button>
       </div>
     </div>

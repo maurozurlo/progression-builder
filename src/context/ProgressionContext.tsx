@@ -1,5 +1,35 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  ReactNode,
+} from 'react';
+import * as Tone from 'tone';
 import { Chord } from '../types/music';
+import { buildBassLine } from '../helpers/bass';
+import {
+  initAudio,
+  createStrumSynth,
+  createBassSynth,
+  scheduleProgression,
+  scheduleBassLine,
+  startTransport,
+  stopTransport,
+  stopAllSound,
+  setTempo,
+} from '../helpers/audio';
+import {
+  createDrumKit,
+  disposeDrumKit,
+  scheduleDrumLine,
+  DrumKit,
+} from '../helpers/drums';
+import { buildChordPitches, meterTuple, Meter } from '../helpers/playback';
+import { getStrumPatterns } from '../data/strumPatterns';
+import { getBassPatterns } from '../data/bassPatterns';
+import { getDrumPatterns } from '../data/drumPatterns';
 
 type FixValue = ['key', string | number] | ['mode', number];
 
@@ -10,10 +40,18 @@ export interface ProgressionState {
   modalState: number;
   samplerOpen: boolean;
   generatorOpen: boolean;
+  bassOpen: boolean;
+  drumsOpen: boolean;
+  bpm: number;
+  meter: Meter;
+  patternId: string;
+  bassPatternId: string;
+  drumPatternId: string;
 }
 
 interface ProgressionContextValue extends ProgressionState {
   maxChords: number;
+  isPlaying: boolean;
   setList: (list: Chord[]) => void;
   setChordAt: (index: number, patch: Partial<Chord>) => void;
   addChord: () => void;
@@ -24,6 +62,14 @@ interface ProgressionContextValue extends ProgressionState {
   applyGenerated: (chords: Chord[], mode: 'replace' | 'append') => void;
   toggleSampler: () => void;
   toggleGenerator: () => void;
+  toggleBass: () => void;
+  toggleDrums: () => void;
+  setBpm: (bpm: number) => void;
+  setMeter: (meter: Meter) => void;
+  setPatternId: (id: string) => void;
+  setBassPatternId: (id: string) => void;
+  setDrumPatternId: (id: string) => void;
+  togglePlay: () => void;
 }
 
 const defaultChord: Chord = {
@@ -71,6 +117,34 @@ export const ProgressionProvider = ({
   const [generatorOpen, setGeneratorOpen] = useState<boolean>(
     initialState?.generatorOpen ?? false
   );
+  const [bassOpen, setBassOpen] = useState<boolean>(
+    initialState?.bassOpen ?? false
+  );
+  const [drumsOpen, setDrumsOpen] = useState<boolean>(
+    initialState?.drumsOpen ?? false
+  );
+
+  const [bpm, setBpm] = useState<number>(initialState?.bpm ?? 120);
+  const [meter, setMeterState] = useState<Meter>(
+    initialState?.meter ?? '4/4'
+  );
+  const [patternId, setPatternId] = useState<string>(
+    initialState?.patternId ?? getStrumPatterns(meter)[0].id
+  );
+  const [bassPatternId, setBassPatternId] = useState<string>(
+    initialState?.bassPatternId ?? ''
+  );
+  const [drumPatternId, setDrumPatternId] = useState<string>(
+    initialState?.drumPatternId ?? ''
+  );
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const synthRef = useRef<Tone.PolySynth | null>(null);
+  const bassSynthRef = useRef<Tone.PolySynth | null>(null);
+  const drumKitRef = useRef<DrumKit | null>(null);
+  const loopRef = useRef<Tone.Loop | null>(null);
+  const bassLoopRef = useRef<Tone.Loop | null>(null);
+  const drumLoopRef = useRef<Tone.Loop | null>(null);
 
   const closeModal = () => setModalState(-1);
   const openModal = (n: number) => setModalState(n);
@@ -110,12 +184,153 @@ export const ProgressionProvider = ({
   const toggleSampler = () => {
     setSamplerOpen((prev) => !prev);
     setGeneratorOpen(false);
+    setBassOpen(false);
+    setDrumsOpen(false);
   };
 
   const toggleGenerator = () => {
     setGeneratorOpen((prev) => !prev);
     setSamplerOpen(false);
+    setBassOpen(false);
+    setDrumsOpen(false);
   };
+
+  const toggleBass = () => {
+    setBassOpen((prev) => !prev);
+    setSamplerOpen(false);
+    setGeneratorOpen(false);
+    setDrumsOpen(false);
+  };
+
+  const toggleDrums = () => {
+    setDrumsOpen((prev) => !prev);
+    setSamplerOpen(false);
+    setGeneratorOpen(false);
+    setBassOpen(false);
+  };
+
+  const setMeter = (value: Meter) => {
+    setMeterState(value);
+    setPatternId(getStrumPatterns(value)[0].id);
+  };
+
+  const stop = () => {
+    stopTransport();
+    if (synthRef.current) {
+      stopAllSound(synthRef.current);
+    }
+    if (bassSynthRef.current) {
+      stopAllSound(bassSynthRef.current);
+    }
+    loopRef.current?.dispose();
+    loopRef.current = null;
+    bassLoopRef.current?.dispose();
+    bassLoopRef.current = null;
+    drumLoopRef.current?.dispose();
+    drumLoopRef.current = null;
+    setIsPlaying(false);
+  };
+
+  const play = async () => {
+    if (list.length === 0) return;
+    await initAudio();
+    if (!synthRef.current) {
+      synthRef.current = createStrumSynth();
+    }
+    const patterns = getStrumPatterns(meter);
+    const pattern = patterns.find((p) => p.id === patternId) ?? patterns[0];
+    loopRef.current = scheduleProgression(
+      synthRef.current,
+      buildChordPitches(list, fixedKey, fixedMode),
+      pattern,
+      bpm,
+      meterTuple(meter)
+    );
+
+    if (bassPatternId) {
+      if (!bassSynthRef.current) {
+        bassSynthRef.current = createBassSynth();
+      }
+      const bassPatterns = getBassPatterns(meter);
+      const bassPattern =
+        bassPatterns.find((p) => p.id === bassPatternId) ?? bassPatterns[0];
+      bassLoopRef.current = scheduleBassLine(
+        bassSynthRef.current,
+        buildBassLine(list, fixedKey, fixedMode),
+        bassPattern,
+        bpm,
+        meterTuple(meter)
+      );
+    }
+
+    if (drumPatternId) {
+      if (!drumKitRef.current) {
+        drumKitRef.current = createDrumKit();
+      }
+      const drumPatterns = getDrumPatterns(meter);
+      const drumPattern =
+        drumPatterns.find((p) => p.id === drumPatternId) ?? drumPatterns[0];
+      drumLoopRef.current = scheduleDrumLine(
+        drumKitRef.current,
+        drumPattern,
+        bpm,
+        meterTuple(meter)
+      );
+    }
+
+    startTransport(bpm);
+    setIsPlaying(true);
+  };
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      stop();
+    } else {
+      void play();
+    }
+  };
+
+  const handleSetBpm = (value: number) => {
+    setBpm(value);
+    if (isPlaying) {
+      setTempo(value);
+    }
+  };
+
+  //The running Tone.Loops are bound to a fixed chord set/pattern/meter/bpm at schedule time, so any of
+  //these changing while playing needs a stop+reschedule+restart to actually be heard. A single effect
+  //(rather than acting inline from each setter) avoids acting on stale state from the same render.
+  useEffect(() => {
+    if (!isPlaying) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- stop()/play() drive the live Tone.Transport, an external system; isPlaying is incidental
+    stop();
+    void play();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list, fixedKey, fixedMode, patternId, bassPatternId, drumPatternId, meter]);
+
+  useEffect(() => {
+    return () => {
+      if (loopRef.current) {
+        loopRef.current.dispose();
+      }
+      if (bassLoopRef.current) {
+        bassLoopRef.current.dispose();
+      }
+      if (drumLoopRef.current) {
+        drumLoopRef.current.dispose();
+      }
+      stopTransport();
+      if (synthRef.current) {
+        stopAllSound(synthRef.current);
+      }
+      if (bassSynthRef.current) {
+        stopAllSound(bassSynthRef.current);
+      }
+      if (drumKitRef.current) {
+        disposeDrumKit(drumKitRef.current);
+      }
+    };
+  }, []);
 
   const value: ProgressionContextValue = {
     list,
@@ -124,7 +339,15 @@ export const ProgressionProvider = ({
     modalState,
     samplerOpen,
     generatorOpen,
+    bassOpen,
+    drumsOpen,
+    bpm,
+    meter,
+    patternId,
+    bassPatternId,
+    drumPatternId,
     maxChords,
+    isPlaying,
     setList,
     setChordAt,
     addChord,
@@ -135,6 +358,14 @@ export const ProgressionProvider = ({
     applyGenerated,
     toggleSampler,
     toggleGenerator,
+    toggleBass,
+    toggleDrums,
+    setBpm: handleSetBpm,
+    setMeter,
+    setPatternId,
+    setBassPatternId,
+    setDrumPatternId,
+    togglePlay,
   };
 
   return (
