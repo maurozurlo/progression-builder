@@ -3,7 +3,7 @@
 
   border: 3px solid var(--black);
   grid-template-columns: 20% auto;
-  font-size: .8rem;
+  font-size: 0.8rem;
 }
 
 .logoContainer > h1 {
@@ -17,7 +17,7 @@
 
 @media (max-width: 600px) {
   .logoContainer {
-    font-size: .7em;
+    font-size: 0.7em;
   }
 }
 
@@ -27,7 +27,7 @@
   margin: 0 auto;
   border: 3px solid var(--black);
   padding: 2px 5px;
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 .infoContainer small,

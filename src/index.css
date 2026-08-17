@@ -1,10 +1,10 @@
-:root{
-  --primary: #CED3E7;
+:root {
+  --primary: #ced3e7;
   --light: #f1f4ff;
   --dark: #69677d;
   --darker: #2f2d3e;
   --white: #ffffff;
-  --black: #231F20;
+  --black: #231f20;
   --tooltip: rgba(181, 178, 210, 0.9);
   --dark-with-transparency: rgba(193, 191, 214, 0.8);
   --max-width: 480px;
@@ -102,16 +102,18 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-button, input[type="submit"], input[type="reset"] {
-	background: none;
-	color: inherit;
-	border: none;
-	padding: 0;
-	font: inherit;
-	cursor: pointer;
-	outline: inherit;
+button,
+input[type='submit'],
+input[type='reset'] {
+  background: none;
+  color: inherit;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
 }

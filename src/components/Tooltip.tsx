@@ -6,10 +6,10 @@ interface TooltipProps {
 }
 
 const Tooltip = (props: TooltipProps) => {
-  const className = props.pop ? `${styles.container} ${styles.visible}` : styles.container;
-  return <div className={className}>
-    {props.chordNotes}
-  </div>;
-}
+  const className = props.pop
+    ? `${styles.container} ${styles.visible}`
+    : styles.container;
+  return <div className={className}>{props.chordNotes}</div>;
+};
 
 export default Tooltip;

@@ -4,7 +4,7 @@
   justify-content: space-between;
 
   background-color: var(--dark) !important;
-  font-size: .6em;
+  font-size: 0.6em;
 }
 
 .mainControls button {
@@ -18,7 +18,7 @@
 
 .mainControls button.pressed {
   background-color: var(--darker);
-  transition: .5s;
+  transition: 0.5s;
 }
 
 @media (max-width: 600px) {

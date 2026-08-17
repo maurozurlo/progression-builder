@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import styles from './Controls.module.css';
-import { modeNames } from '../helpers/music'
+import { modeNames } from '../helpers/music';
 
 interface ControlsProps {
   keyClick: (pressed: boolean) => void;
@@ -14,28 +14,34 @@ const Controls = (props: ControlsProps) => {
   const [pressedKey, setPressedKey] = useState(false);
 
   const editClassK = () => {
-    !pressedKey ? setPressedKey(true) : setPressedKey(false);
+    setPressedKey(!pressedKey);
     props.keyClick(!pressedKey);
-  }
+  };
   //Mode
   const [pressedMode, setPressedMode] = useState(false);
 
   const editClassM = () => {
-    !pressedMode ? setPressedMode(true) : setPressedMode(false);
+    setPressedMode(!pressedMode);
     props.modeClick(!pressedMode);
-  }
+  };
 
   return (
     <div className={styles.mainControls}>
-      <button onClick={editClassK}
-              className={props.fixedKey !== -1 ? styles.pressed : undefined}>
-      <strong>Key:</strong> {props.fixedKey !== -1 ?  props.fixedKey : 'Mixed'}
-				</button>
-    <button  onClick={editClassM}
-              className={props.fixedMode !== -1 ? styles.pressed : undefined}>
-      <strong>Mode:</strong> {props.fixedMode !== -1 ?  modeNames[props.fixedMode] : 'Mixed'}
-				</button>
-        </div>)
-}
+      <button
+        onClick={editClassK}
+        className={props.fixedKey !== -1 ? styles.pressed : undefined}
+      >
+        <strong>Key:</strong> {props.fixedKey !== -1 ? props.fixedKey : 'Mixed'}
+      </button>
+      <button
+        onClick={editClassM}
+        className={props.fixedMode !== -1 ? styles.pressed : undefined}
+      >
+        <strong>Mode:</strong>{' '}
+        {props.fixedMode !== -1 ? modeNames[props.fixedMode] : 'Mixed'}
+      </button>
+    </div>
+  );
+};
 
 export default Controls;

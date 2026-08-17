@@ -6,7 +6,7 @@
   background: var(--dark-with-transparency);
   display: flex;
   justify-content: center;
-  font-size: .7em;
+  font-size: 0.7em;
 }
 
 @media (max-width: 600px) {
@@ -45,9 +45,11 @@
   text-transform: uppercase;
   text-align: center;
   letter-spacing: 1px;
-  padding: .3em 1em;
+  padding: 0.3em 1em;
   border: 1px solid var(--darker);
-  transition: background-color .5s ease-in, color .5s ease-in;
+  transition:
+    background-color 0.5s ease-in,
+    color 0.5s ease-in;
 }
 
 .buttonContainer button.outline {

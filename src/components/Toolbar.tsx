@@ -19,7 +19,8 @@ const Toolbar = (props: ToolbarProps) => {
           <img src={del} alt="Delete chord" />
         </button>
       </div>
-    </div>)
-}
+    </div>
+  );
+};
 
 export default Toolbar;
