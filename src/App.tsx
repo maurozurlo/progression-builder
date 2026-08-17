@@ -10,6 +10,7 @@ import SamplerDrawer from './components/SamplerDrawer';
 import GeneratorDrawer from './components/GeneratorDrawer';
 import BassDrawer from './components/BassDrawer';
 import DrumDrawer from './components/DrumDrawer';
+import MelodyDrawer from './components/MelodyDrawer';
 import {
   ProgressionProvider,
   useProgressionContext,
@@ -23,10 +24,12 @@ const Layout = () => {
     generatorOpen,
     bassOpen,
     drumsOpen,
+    melodyOpen,
     toggleSampler,
     toggleGenerator,
     toggleBass,
     toggleDrums,
+    toggleMelody,
   } = useProgressionContext();
 
   return (
@@ -60,6 +63,10 @@ const Layout = () => {
 
         <Drawer open={drumsOpen} onClose={toggleDrums} title="Drums">
           <DrumDrawer />
+        </Drawer>
+
+        <Drawer open={melodyOpen} onClose={toggleMelody} title="Melody">
+          <MelodyDrawer />
         </Drawer>
       </div>
 

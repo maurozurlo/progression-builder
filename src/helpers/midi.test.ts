@@ -4,6 +4,7 @@ import {
   writeVarLen,
   buildMidiBytes,
   buildMultiTrackMidiBytes,
+  buildMelodyTrackEvents,
 } from './midi';
 import { BassPattern, DrumPattern } from '../types/music';
 
@@ -95,5 +96,40 @@ describe('buildMultiTrackMidiBytes', () => {
     expect(bytes[11]).toBe(3); // tempo, chords, drums
     const asString = String.fromCharCode(...bytes);
     expect(asString.split('MTrk').length - 1).toBe(3);
+  });
+
+  it('adds a track when a melody line is given', () => {
+    const bytes = buildMultiTrackMidiBytes(
+      [[{ note: 'C', octave: 4 }]],
+      120,
+      4,
+      undefined,
+      undefined,
+      { line: [[{ note: { note: 'E', octave: 4 }, offset: 0 }]] }
+    );
+
+    expect(bytes[11]).toBe(3); // tempo, chords, melody
+    const asString = String.fromCharCode(...bytes);
+    expect(asString.split('MTrk').length - 1).toBe(3);
+    expect(asString).toContain('Melody');
+  });
+});
+
+describe('buildMelodyTrackEvents', () => {
+  it('produces a note-on/note-off pair per event, offset within its bar', () => {
+    const events = buildMelodyTrackEvents(
+      [
+        [
+          { note: { note: 'C', octave: 4 }, offset: 0 },
+          { note: { note: 'E', octave: 4 }, offset: 0.5 },
+        ],
+      ],
+      4
+    );
+
+    expect(events).toHaveLength(4);
+    const noteOns = events.filter((e) => e.status === 0x90);
+    expect(noteOns.map((e) => e.note)).toEqual([60, 64]);
+    expect(noteOns[1].tick).toBe(960); // 0.5 * 4 beats * 480 ticks
   });
 });

@@ -3,6 +3,7 @@ import {
   BassPattern,
   DrumPattern,
   DrumVoice,
+  MelodyEvent,
   VoicedNote,
 } from '../types/music';
 
@@ -79,6 +80,27 @@ export const buildBassTrackEvents = (
       const startTick = barStartTick + Math.round(step.offset * ticksPerBar);
       const endTick = startTick + EIGHTH_NOTE_TICKS;
       const note = noteToMidiNumber(chordNotes[step.degree]);
+      events.push({ tick: startTick, status: 0x90, note, velocity: 100 });
+      events.push({ tick: endTick, status: 0x80, note, velocity: 0 });
+    });
+  });
+
+  return events;
+};
+
+export const buildMelodyTrackEvents = (
+  melodyLine: MelodyEvent[][],
+  beatsPerBar: number
+): MidiEvent[] => {
+  const ticksPerBar = TICKS_PER_QUARTER * beatsPerBar;
+  const events: MidiEvent[] = [];
+
+  melodyLine.forEach((bar, i) => {
+    const barStartTick = i * ticksPerBar;
+    bar.forEach((event) => {
+      const startTick = barStartTick + Math.round(event.offset * ticksPerBar);
+      const endTick = startTick + EIGHTH_NOTE_TICKS;
+      const note = noteToMidiNumber(event.note);
       events.push({ tick: startTick, status: 0x90, note, velocity: 100 });
       events.push({ tick: endTick, status: 0x80, note, velocity: 0 });
     });
@@ -219,7 +241,8 @@ export const buildMultiTrackMidiBytes = (
   bpm: number,
   beatsPerBar: number,
   bass?: { line: BassChordNotes[]; pattern: BassPattern },
-  drums?: { pattern: DrumPattern }
+  drums?: { pattern: DrumPattern },
+  melody?: { line: MelodyEvent[][] }
 ): number[] => {
   const microsecondsPerQuarter = Math.round(60000000 / bpm);
   const tempoTrack = buildTrackChunk([], {
@@ -240,6 +263,14 @@ export const buildMultiTrackMidiBytes = (
     );
   }
 
+  if (melody) {
+    tracks.push(
+      buildTrackChunk(buildMelodyTrackEvents(melody.line, beatsPerBar), {
+        name: 'Melody',
+      })
+    );
+  }
+
   if (drums) {
     tracks.push(
       buildTrackChunk(
@@ -257,11 +288,12 @@ export const buildMidiBlob = (
   bpm: number,
   beatsPerBar: number,
   bass?: { line: BassChordNotes[]; pattern: BassPattern },
-  drums?: { pattern: DrumPattern }
+  drums?: { pattern: DrumPattern },
+  melody?: { line: MelodyEvent[][] }
 ): Blob => {
   const bytes =
-    bass || drums
-      ? buildMultiTrackMidiBytes(chords, bpm, beatsPerBar, bass, drums)
+    bass || drums || melody
+      ? buildMultiTrackMidiBytes(chords, bpm, beatsPerBar, bass, drums, melody)
       : buildMidiBytes(chords, bpm, beatsPerBar);
   return new Blob([new Uint8Array(bytes)], { type: 'audio/midi' });
 };

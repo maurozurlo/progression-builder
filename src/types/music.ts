@@ -38,3 +38,17 @@ export interface DrumPattern {
   name: string;
   steps: { offset: number; voice: DrumVoice }[]; // fraction-of-bar [0,1)
 }
+
+export type MelodyGenre = 'pop' | 'jazz' | 'classical';
+
+export type MotifVariation = 'repeat' | 'invert' | 'sequence' | 'fragment';
+
+export interface MotifStep {
+  offset: number; // fraction-of-bar [0,1)
+  degreeOffset: number; // diatonic scale steps relative to the motif's own start note
+}
+
+export interface MelodyEvent {
+  note: VoicedNote;
+  offset: number; // fraction-of-bar [0,1)
+}

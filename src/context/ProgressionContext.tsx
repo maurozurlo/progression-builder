@@ -7,14 +7,17 @@ import {
   ReactNode,
 } from 'react';
 import * as Tone from 'tone';
-import { Chord } from '../types/music';
+import { Chord, MelodyGenre } from '../types/music';
 import { buildBassLine } from '../helpers/bass';
+import { buildMelodyLine } from '../helpers/melody';
 import {
   initAudio,
   createStrumSynth,
   createBassSynth,
+  createMelodySynth,
   scheduleProgression,
   scheduleBassLine,
+  scheduleMelodyLine,
   startTransport,
   stopTransport,
   stopAllSound,
@@ -42,11 +45,14 @@ export interface ProgressionState {
   generatorOpen: boolean;
   bassOpen: boolean;
   drumsOpen: boolean;
+  melodyOpen: boolean;
+  chordsOn: boolean;
   bpm: number;
   meter: Meter;
   patternId: string;
   bassPatternId: string;
   drumPatternId: string;
+  melodyGenre: '' | MelodyGenre;
 }
 
 interface ProgressionContextValue extends ProgressionState {
@@ -64,11 +70,14 @@ interface ProgressionContextValue extends ProgressionState {
   toggleGenerator: () => void;
   toggleBass: () => void;
   toggleDrums: () => void;
+  toggleMelody: () => void;
+  setChordsOn: (on: boolean) => void;
   setBpm: (bpm: number) => void;
   setMeter: (meter: Meter) => void;
   setPatternId: (id: string) => void;
   setBassPatternId: (id: string) => void;
   setDrumPatternId: (id: string) => void;
+  setMelodyGenre: (genre: '' | MelodyGenre) => void;
   togglePlay: () => void;
 }
 
@@ -123,6 +132,12 @@ export const ProgressionProvider = ({
   const [drumsOpen, setDrumsOpen] = useState<boolean>(
     initialState?.drumsOpen ?? false
   );
+  const [melodyOpen, setMelodyOpen] = useState<boolean>(
+    initialState?.melodyOpen ?? false
+  );
+  const [chordsOn, setChordsOn] = useState<boolean>(
+    initialState?.chordsOn ?? true
+  );
 
   const [bpm, setBpm] = useState<number>(initialState?.bpm ?? 120);
   const [meter, setMeterState] = useState<Meter>(
@@ -137,13 +152,18 @@ export const ProgressionProvider = ({
   const [drumPatternId, setDrumPatternId] = useState<string>(
     initialState?.drumPatternId ?? ''
   );
+  const [melodyGenre, setMelodyGenre] = useState<'' | MelodyGenre>(
+    initialState?.melodyGenre ?? ''
+  );
   const [isPlaying, setIsPlaying] = useState(false);
 
   const synthRef = useRef<Tone.PolySynth | null>(null);
   const bassSynthRef = useRef<Tone.PolySynth | null>(null);
+  const melodySynthRef = useRef<Tone.PolySynth | null>(null);
   const drumKitRef = useRef<DrumKit | null>(null);
   const loopRef = useRef<Tone.Loop | null>(null);
   const bassLoopRef = useRef<Tone.Loop | null>(null);
+  const melodyLoopRef = useRef<Tone.Loop | null>(null);
   const drumLoopRef = useRef<Tone.Loop | null>(null);
 
   const closeModal = () => setModalState(-1);
@@ -186,6 +206,7 @@ export const ProgressionProvider = ({
     setGeneratorOpen(false);
     setBassOpen(false);
     setDrumsOpen(false);
+    setMelodyOpen(false);
   };
 
   const toggleGenerator = () => {
@@ -193,6 +214,7 @@ export const ProgressionProvider = ({
     setSamplerOpen(false);
     setBassOpen(false);
     setDrumsOpen(false);
+    setMelodyOpen(false);
   };
 
   const toggleBass = () => {
@@ -200,6 +222,7 @@ export const ProgressionProvider = ({
     setSamplerOpen(false);
     setGeneratorOpen(false);
     setDrumsOpen(false);
+    setMelodyOpen(false);
   };
 
   const toggleDrums = () => {
@@ -207,6 +230,15 @@ export const ProgressionProvider = ({
     setSamplerOpen(false);
     setGeneratorOpen(false);
     setBassOpen(false);
+    setMelodyOpen(false);
+  };
+
+  const toggleMelody = () => {
+    setMelodyOpen((prev) => !prev);
+    setSamplerOpen(false);
+    setGeneratorOpen(false);
+    setBassOpen(false);
+    setDrumsOpen(false);
   };
 
   const setMeter = (value: Meter) => {
@@ -222,10 +254,15 @@ export const ProgressionProvider = ({
     if (bassSynthRef.current) {
       stopAllSound(bassSynthRef.current);
     }
+    if (melodySynthRef.current) {
+      stopAllSound(melodySynthRef.current);
+    }
     loopRef.current?.dispose();
     loopRef.current = null;
     bassLoopRef.current?.dispose();
     bassLoopRef.current = null;
+    melodyLoopRef.current?.dispose();
+    melodyLoopRef.current = null;
     drumLoopRef.current?.dispose();
     drumLoopRef.current = null;
     setIsPlaying(false);
@@ -234,18 +271,20 @@ export const ProgressionProvider = ({
   const play = async () => {
     if (list.length === 0) return;
     await initAudio();
-    if (!synthRef.current) {
-      synthRef.current = createStrumSynth();
+    if (chordsOn) {
+      if (!synthRef.current) {
+        synthRef.current = createStrumSynth();
+      }
+      const patterns = getStrumPatterns(meter);
+      const pattern = patterns.find((p) => p.id === patternId) ?? patterns[0];
+      loopRef.current = scheduleProgression(
+        synthRef.current,
+        buildChordPitches(list, fixedKey, fixedMode),
+        pattern,
+        bpm,
+        meterTuple(meter)
+      );
     }
-    const patterns = getStrumPatterns(meter);
-    const pattern = patterns.find((p) => p.id === patternId) ?? patterns[0];
-    loopRef.current = scheduleProgression(
-      synthRef.current,
-      buildChordPitches(list, fixedKey, fixedMode),
-      pattern,
-      bpm,
-      meterTuple(meter)
-    );
 
     if (bassPatternId) {
       if (!bassSynthRef.current) {
@@ -258,6 +297,18 @@ export const ProgressionProvider = ({
         bassSynthRef.current,
         buildBassLine(list, fixedKey, fixedMode),
         bassPattern,
+        bpm,
+        meterTuple(meter)
+      );
+    }
+
+    if (melodyGenre) {
+      if (!melodySynthRef.current) {
+        melodySynthRef.current = createMelodySynth();
+      }
+      melodyLoopRef.current = scheduleMelodyLine(
+        melodySynthRef.current,
+        buildMelodyLine(list, fixedKey, fixedMode, melodyGenre),
         bpm,
         meterTuple(meter)
       );
@@ -306,7 +357,17 @@ export const ProgressionProvider = ({
     stop();
     void play();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [list, fixedKey, fixedMode, patternId, bassPatternId, drumPatternId, meter]);
+  }, [
+    list,
+    fixedKey,
+    fixedMode,
+    patternId,
+    bassPatternId,
+    drumPatternId,
+    melodyGenre,
+    chordsOn,
+    meter,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -315,6 +376,9 @@ export const ProgressionProvider = ({
       }
       if (bassLoopRef.current) {
         bassLoopRef.current.dispose();
+      }
+      if (melodyLoopRef.current) {
+        melodyLoopRef.current.dispose();
       }
       if (drumLoopRef.current) {
         drumLoopRef.current.dispose();
@@ -325,6 +389,9 @@ export const ProgressionProvider = ({
       }
       if (bassSynthRef.current) {
         stopAllSound(bassSynthRef.current);
+      }
+      if (melodySynthRef.current) {
+        stopAllSound(melodySynthRef.current);
       }
       if (drumKitRef.current) {
         disposeDrumKit(drumKitRef.current);
@@ -341,11 +408,14 @@ export const ProgressionProvider = ({
     generatorOpen,
     bassOpen,
     drumsOpen,
+    melodyOpen,
+    chordsOn,
     bpm,
     meter,
     patternId,
     bassPatternId,
     drumPatternId,
+    melodyGenre,
     maxChords,
     isPlaying,
     setList,
@@ -360,11 +430,14 @@ export const ProgressionProvider = ({
     toggleGenerator,
     toggleBass,
     toggleDrums,
+    toggleMelody,
+    setChordsOn,
     setBpm: handleSetBpm,
     setMeter,
     setPatternId,
     setBassPatternId,
     setDrumPatternId,
+    setMelodyGenre,
     togglePlay,
   };
 

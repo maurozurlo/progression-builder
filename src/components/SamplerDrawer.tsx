@@ -1,6 +1,7 @@
 import styles from './SamplerDrawer.module.css';
 import { buildVoicedChords } from '../helpers/playback';
 import { buildBassLine } from '../helpers/bass';
+import { buildMelodyLine } from '../helpers/melody';
 import { buildMidiBlob } from '../helpers/midi';
 import { getStrumPatterns } from '../data/strumPatterns';
 import { getBassPatterns } from '../data/bassPatterns';
@@ -20,6 +21,9 @@ const SamplerDrawer = () => {
     setPatternId,
     bassPatternId,
     drumPatternId,
+    melodyGenre,
+    chordsOn,
+    setChordsOn,
     bpm,
     setBpm,
     isPlaying,
@@ -37,12 +41,30 @@ const SamplerDrawer = () => {
     const drumPattern = drumPatterns.find((p) => p.id === drumPatternId);
     const drums = drumPattern ? { pattern: drumPattern } : undefined;
 
+    //Playback loops the melody over a repeated multi-bar phrase so its motif has room to develop;
+    //the export is a fixed-length file, so it's trimmed back to one bar per chord to stay aligned
+    //with the chord/bass/drum tracks (which each render exactly list.length bars).
+    const melody = melodyGenre
+      ? {
+          line: buildMelodyLine(list, fixedKey, fixedMode, melodyGenre).slice(
+            0,
+            list.length
+          ),
+        }
+      : undefined;
+
+    //Drum bar-count derives from the chords array's length, so when chords are off it's kept the
+    //same length with empty note lists per bar rather than passed as an empty array.
+    const voicedChords = buildVoicedChords(list, fixedKey, fixedMode);
+    const chordsForExport = chordsOn ? voicedChords : voicedChords.map(() => []);
+
     const blob = buildMidiBlob(
-      buildVoicedChords(list, fixedKey, fixedMode),
+      chordsForExport,
       bpm,
       meter === '4/4' ? 4 : 3,
       bass,
-      drums
+      drums,
+      melody
     );
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -63,6 +85,17 @@ const SamplerDrawer = () => {
           <option value="4/4">4/4</option>
           <option value="3/4">3/4</option>
         </select>
+      </div>
+
+      <div className={styles.field}>
+        <label>
+          <input
+            type="checkbox"
+            checked={chordsOn}
+            onChange={(e) => setChordsOn(e.target.checked)}
+          />{' '}
+          Chords
+        </label>
       </div>
 
       <div className={styles.field}>

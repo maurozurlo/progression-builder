@@ -192,6 +192,17 @@ const checkifHigherThanTwelve = (val: number): number => {
   return val;
 };
 
+export const getScaleNoteName = (
+  key: string,
+  mode: number | string,
+  degree: number
+): string => {
+  const tone = toneNames.findIndex((element) => element === key);
+  const modeArr = modes[Number(mode)];
+  const degreeInScale = ((degree % 7) + 7) % 7;
+  return toneNames[checkifHigherThanTwelve(tone + modeArr[degreeInScale][0])];
+};
+
 export const getIndexOfNote = (val: string): number => {
   const tone = toneNames.findIndex((element) => element === val);
   return tone;
@@ -216,6 +227,7 @@ export default {
   calculateChord,
   getChordInScale,
   getNotesInChord,
+  getScaleNoteName,
   getIndexOfNote,
   getChordFunction,
   getFunctionsInScale,

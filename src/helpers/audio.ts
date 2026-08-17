@@ -1,5 +1,10 @@
 import * as Tone from 'tone';
-import { BassChordNotes, BassPattern, StrumPattern } from '../types/music';
+import {
+  BassChordNotes,
+  BassPattern,
+  MelodyEvent,
+  StrumPattern,
+} from '../types/music';
 import { toToneJsPitch } from './pitch';
 
 //Pure helper, kept free of Tone.js so it can be unit tested independent of the audio context
@@ -66,6 +71,40 @@ export const scheduleBassLine = (
       synth.triggerAttackRelease(note, '8n', time + step.offset * barSeconds);
     });
     chordIndex = (chordIndex + 1) % chords.length;
+  }, '1m');
+
+  loop.start(0);
+  return loop;
+};
+
+export const createMelodySynth = (): Tone.PolySynth =>
+  new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'triangle' },
+  }).toDestination();
+
+export const scheduleMelodyLine = (
+  synth: Tone.PolySynth,
+  bars: MelodyEvent[][],
+  bpm: number,
+  meter: [number, number]
+): Tone.Loop => {
+  Tone.Transport.bpm.value = bpm;
+  Tone.Transport.timeSignature = meter;
+
+  let barIndex = 0;
+
+  const loop = new Tone.Loop((time) => {
+    if (bars.length === 0) return;
+    const events = bars[barIndex];
+    const barSeconds = Tone.Time('1m').toSeconds();
+    events.forEach((event) => {
+      synth.triggerAttackRelease(
+        toToneJsPitch(event.note),
+        '16n',
+        time + event.offset * barSeconds
+      );
+    });
+    barIndex = (barIndex + 1) % bars.length;
   }, '1m');
 
   loop.start(0);
