@@ -1,0 +1,41 @@
+.logoContainer {
+  display: grid;
+
+  border: 3px solid var(--black);
+  grid-template-columns: 20% auto;
+  font-size: .8rem;
+}
+
+.logoContainer > h1 {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: bold;
+  align-self: center;
+  justify-self: center;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .logoContainer {
+    font-size: .7em;
+  }
+}
+
+.infoContainer {
+  background-color: var(--black);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  border: 3px solid var(--black);
+  padding: 2px 5px;
+  font-size: .9rem;
+}
+
+.infoContainer small,
+.infoContainer small > a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.infoContainer small:nth-of-type(2) {
+  float: right;
+}

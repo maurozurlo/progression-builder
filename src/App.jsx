@@ -1,19 +1,11 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
+import styles from './App.module.css';
 //Components
 import Header from './components/Header';
 import Modal from './components/Modal';
 import Controls from './components/Controls';
 import Chord from './components/Chord';
 import Toolbar from './components/Toolbar';
-
-const Wrapper = styled.div`
-  max-width: var(--max-width);
-  width: 100%;
-  min-height: 100%;
-  margin: 0 auto;
-  padding-bottom: 10vh;
-`
 
 function App() {
   const defaultChord = {
@@ -71,7 +63,7 @@ function App() {
         fixedKey={fixedKey}
         fixedMode={fixedMode}
         ></Modal>}
-      <Wrapper>
+      <div className={styles.wrapper}>
         <Header />
         <Controls
         modeClick={openModalMode}
@@ -91,7 +83,7 @@ function App() {
             fixedKey={fixedKey} />
         ))}
 
-      </Wrapper>
+      </div>
 
       <Toolbar
         addChord={addChord}

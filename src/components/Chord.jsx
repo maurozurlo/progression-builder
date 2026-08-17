@@ -1,76 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import styled from 'styled-components';
+import styles from './Chord.module.css';
 
 import * as theory from '../helpers/music'
 import Tooltip from './Tooltip'
-
-const Container = styled.div`
-  font-size: .7em;
-
-  
-  label{
-    font-size: .7em;  
-  }
-
-  @media (max-width: 600px) {
-    font-size: 1.4em;
-
-      label{
-        font-size: .7em;  
-      }
-    }
-`
-const Wrapper = styled.div`
-  display: grid;
-  background-color: var(--black);
-  color: var(--white);
-  grid-template-columns: 1fr 2fr 1fr 1fr;
-  padding: 5px 0;
-`
-const InputContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  align-items: center;
-  justify-content: space-between;
-`
-const Title = styled.label`
-	height: 30%;
-`
-const SelectInput = styled.select`
-  background-color: var(--dark);
-  color: var(--light);
-  border-radius: 5px;
-  border: 2px solid var(--darker);
-  text-align: center;
-  text-align-last: center;
-  appearance: none;
-  padding: 8px;
-  &[disabled]{
-    background-color: var(--primary);
-    color: var(--dark);
-  }
-`;
-const GeneratedChord = styled.span`
-  display: inline-flex;
-  align-items: center;
-  background-color: var(--dark);
-  color: var(--light);
-  border-radius: 5px;
-  border: 2px solid var(--darker);
-  justify-content: center;
-  width: 70%;
-  padding: 8px;
-  position: relative;
-`;
-
-const ChordsInScale = styled.div`
-    background: var(--darker);
-    color: var(--white);
-    padding: 5px;
-    text-align: center;
-    font-size: .8em;
-`
 
 const Chord = (props) => {
   //Key
@@ -148,11 +80,12 @@ const Chord = (props) => {
   }
 
   return (
-    <Container>
-      <Wrapper>
-        <InputContainer>
-          <Title>KEY</Title>
-          <SelectInput
+    <div className={styles.container}>
+      <div className={styles.wrapper}>
+        <div className={styles.inputContainer}>
+          <label className={styles.title}>KEY</label>
+          <select
+            className={styles.selectInput}
             title='key'
             onChange={updateChord}
             value={chordTone}
@@ -161,12 +94,12 @@ const Chord = (props) => {
             {theory.toneNames.map((tone, i) => (
               <option key={'t' + i} value={tone}>{tone}</option>
             ))}
-          </SelectInput>
-        </InputContainer>
+          </select>
+        </div>
 
-        <InputContainer>
-          <Title>MODE</Title>
-          <SelectInput title='mode'
+        <div className={styles.inputContainer}>
+          <label className={styles.title}>MODE</label>
+          <select className={styles.selectInput} title='mode'
             onChange={updateChord}
             value={chordMode}
             disabled={props.fixedMode !== -1}
@@ -174,36 +107,36 @@ const Chord = (props) => {
             {theory.modeNames.map((mode, i) => (
               <option key={'m' + i} value={i}>{mode}</option>
             ))}
-          </SelectInput>
-        </InputContainer>
+          </select>
+        </div>
 
-        <InputContainer>
-          <Title>INTERVAL</Title>
-          <SelectInput title='interval' onChange={updateChord} value={chordInterval}>
+        <div className={styles.inputContainer}>
+          <label className={styles.title}>INTERVAL</label>
+          <select className={styles.selectInput} title='interval' onChange={updateChord} value={chordInterval}>
             {theory.intervalNames.map((interval, i) => (
               <option key={'i' + i} value={i}>{interval}</option>
             ))}
-          </SelectInput>
-        </InputContainer>
+          </select>
+        </div>
 
-        <InputContainer>
-          <Title>CHORD</Title>
+        <div className={styles.inputContainer}>
+          <label className={styles.title}>CHORD</label>
 
-          <GeneratedChord onClick={() => handleClick()}>
+          <span className={styles.generatedChord} onClick={() => handleClick()}>
             <Tooltip
             chordNotes={notesInChord}
             pop={showTooltip}
             />
             {chord}
-            </GeneratedChord>
-        </InputContainer>
+            </span>
+        </div>
 
-      </Wrapper>
+      </div>
 
-      <ChordsInScale>
+      <div className={styles.chordsInScale}>
         {chordList}
-      </ChordsInScale>
-    </Container>)
+      </div>
+    </div>)
 }
 
 export default Chord;

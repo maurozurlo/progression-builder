@@ -1,0 +1,28 @@
+.mainControls {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  background-color: var(--dark) !important;
+  font-size: .6em;
+}
+
+.mainControls button {
+  color: var(--light);
+  width: 50%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 1em;
+  border: 1px solid var(--darker);
+}
+
+.mainControls button.pressed {
+  background-color: var(--darker);
+  transition: .5s;
+}
+
+@media (max-width: 600px) {
+  .mainControls {
+    font-size: 1em;
+  }
+}

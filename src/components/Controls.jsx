@@ -1,33 +1,6 @@
 import React, { useState } from 'react'
-import styled from 'styled-components';
+import styles from './Controls.module.css';
 import { modeNames } from '../helpers/music'
-
-const MainControls = styled.div`
-	display: flex;
-	flex-direction: row;
-	justify-content: space-between;
-  
-	background-color: var(--dark) !important;
-  font-size: .6em;
-
-  & button{
-    color: var(--light);
-    width: 50%;
-	text-transform: uppercase;
-  letter-spacing: 1px;
-  padding: 1em;
-  border: 1px solid var(--darker);
-  
-  &.pressed{
-	background-color: var(--darker);
-	transition: .5s;
-  }
-}
-
-@media (max-width: 600px) {
-    font-size: 1em;
-  }
-`
 
 const Controls = (props) => {
   //Key
@@ -46,16 +19,16 @@ const Controls = (props) => {
   }
 
   return (
-    <MainControls>
-      <button onClick={editClassK} 
-              className={props.fixedKey !== -1 ? 'pressed' : undefined}>
+    <div className={styles.mainControls}>
+      <button onClick={editClassK}
+              className={props.fixedKey !== -1 ? styles.pressed : undefined}>
       <strong>Key:</strong> {props.fixedKey !== -1 ?  props.fixedKey : 'Mixed'}
 				</button>
-    <button  onClick={editClassM} 
-              className={props.fixedMode !== -1 ? 'pressed' : undefined}>
+    <button  onClick={editClassM}
+              className={props.fixedMode !== -1 ? styles.pressed : undefined}>
       <strong>Mode:</strong> {props.fixedMode !== -1 ?  modeNames[props.fixedMode] : 'Mixed'}
 				</button>
-        </MainControls>)
+        </div>)
 }
 
 export default Controls;

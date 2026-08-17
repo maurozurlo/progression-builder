@@ -1,0 +1,74 @@
+.container {
+  font-size: .7em;
+}
+
+.container label {
+  font-size: .7em;
+}
+
+@media (max-width: 600px) {
+  .container {
+    font-size: 1.4em;
+  }
+
+  .container label {
+    font-size: .7em;
+  }
+}
+
+.wrapper {
+  display: grid;
+  background-color: var(--black);
+  color: var(--white);
+  grid-template-columns: 1fr 2fr 1fr 1fr;
+  padding: 5px 0;
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  height: 30%;
+}
+
+.selectInput {
+  background-color: var(--dark);
+  color: var(--light);
+  border-radius: 5px;
+  border: 2px solid var(--darker);
+  text-align: center;
+  text-align-last: center;
+  appearance: none;
+  padding: 8px;
+}
+
+.selectInput:disabled {
+  background-color: var(--primary);
+  color: var(--dark);
+}
+
+.generatedChord {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--dark);
+  color: var(--light);
+  border-radius: 5px;
+  border: 2px solid var(--darker);
+  justify-content: center;
+  width: 70%;
+  padding: 8px;
+  position: relative;
+}
+
+.chordsInScale {
+  background: var(--darker);
+  color: var(--white);
+  padding: 5px;
+  text-align: center;
+  font-size: .8em;
+}
