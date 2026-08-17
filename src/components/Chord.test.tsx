@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Chord from './Chord';
+import { ProgressionProvider } from '../context/ProgressionContext';
 
 describe('Chord', () => {
   it('renders the initial scale and updates it when a different key is chosen', async () => {
     render(
-      <Chord tone="C" mode={0} interval={0} fixedMode={-1} fixedKey={-1} />
+      <ProgressionProvider>
+        <Chord index={0} />
+      </ProgressionProvider>
     );
 
     expect(screen.getByText('C Dm Em F G Am Bdim')).toBeInTheDocument();
@@ -18,7 +21,9 @@ describe('Chord', () => {
 
   it('shows the notes that make up the currently generated chord', () => {
     render(
-      <Chord tone="C" mode={0} interval={0} fixedMode={-1} fixedKey={-1} />
+      <ProgressionProvider>
+        <Chord index={0} />
+      </ProgressionProvider>
     );
 
     expect(screen.getByText('C E G')).toBeInTheDocument();
@@ -26,7 +31,9 @@ describe('Chord', () => {
 
   it('locks the key selector when fixedKey is set', () => {
     render(
-      <Chord tone="C" mode={0} interval={0} fixedMode={-1} fixedKey="G" />
+      <ProgressionProvider initialState={{ fixedKey: 'G' }}>
+        <Chord index={0} />
+      </ProgressionProvider>
     );
 
     expect(screen.getByTitle('key')).toBeDisabled();

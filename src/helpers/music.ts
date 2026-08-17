@@ -197,6 +197,18 @@ export const getIndexOfNote = (val: string): number => {
   return tone;
 };
 
+export type ChordFunction = 'T' | 'S' | 'D';
+
+export const getChordFunction = (interval: number): ChordFunction => {
+  const match = intervalNames[interval].match(/\(([A-Z]+)\)/);
+  const suffix = match ? match[1] : 'T';
+  if (suffix === 'SD') return 'S';
+  return suffix as ChordFunction;
+};
+
+export const getFunctionsInScale = (): ChordFunction[] =>
+  intervalNames.map((_, i) => getChordFunction(i));
+
 export default {
   intervalNames,
   modeNames,
@@ -204,4 +216,7 @@ export default {
   calculateChord,
   getChordInScale,
   getNotesInChord,
+  getIndexOfNote,
+  getChordFunction,
+  getFunctionsInScale,
 };

@@ -4,6 +4,8 @@ import {
   getChordInScale,
   getNotesInChord,
   getIndexOfNote,
+  getChordFunction,
+  getFunctionsInScale,
   toneNames,
   modeNames,
   intervalNames,
@@ -79,5 +81,19 @@ describe('getIndexOfNote', () => {
 
   it('returns -1 for an unknown tone', () => {
     expect(getIndexOfNote('X')).toBe(-1);
+  });
+});
+
+describe('getChordFunction', () => {
+  it('classifies tonic, subdominant, and dominant degrees', () => {
+    expect(getChordFunction(0)).toBe('T'); // I (T)
+    expect(getChordFunction(1)).toBe('S'); // II (SD)
+    expect(getChordFunction(4)).toBe('D'); // V (D)
+  });
+});
+
+describe('getFunctionsInScale', () => {
+  it('returns a function per degree, mode-independent', () => {
+    expect(getFunctionsInScale()).toEqual(['T', 'S', 'T', 'S', 'D', 'T', 'D']);
   });
 });

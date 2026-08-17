@@ -1,19 +1,17 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Modal from './Modal';
+import Controls from './Controls';
+import { ProgressionProvider } from '../context/ProgressionContext';
 
 describe('Modal', () => {
-  it('renders the key selector when value=0 and confirms with the current key selection', async () => {
-    const fix = vi.fn();
+  it('renders the key selector when modalState=0 and fixes the selected key', async () => {
     render(
-      <Modal
-        close={() => {}}
-        value={0}
-        fix={fix}
-        fixedKey={-1}
-        fixedMode={-1}
-      />
+      <ProgressionProvider initialState={{ modalState: 0 }}>
+        <Modal />
+        <Controls />
+      </ProgressionProvider>
     );
 
     expect(screen.getByText('Fixed Key')).toBeInTheDocument();
@@ -21,19 +19,17 @@ describe('Modal', () => {
     await userEvent.selectOptions(screen.getByTitle('key'), 'G');
     await userEvent.click(screen.getByText('OK'));
 
-    expect(fix).toHaveBeenCalledWith(['key', 'G']);
+    expect(screen.getByText('Key:').closest('button')).toHaveTextContent(
+      'Key: G'
+    );
   });
 
-  it('renders the mode selector when value=1 and confirms with the current mode selection', async () => {
-    const fix = vi.fn();
+  it('renders the mode selector when modalState=1 and fixes the selected mode', async () => {
     render(
-      <Modal
-        close={() => {}}
-        value={1}
-        fix={fix}
-        fixedKey={-1}
-        fixedMode={-1}
-      />
+      <ProgressionProvider initialState={{ modalState: 1 }}>
+        <Modal />
+        <Controls />
+      </ProgressionProvider>
     );
 
     expect(screen.getByText('Fixed Mode')).toBeInTheDocument();
@@ -41,23 +37,24 @@ describe('Modal', () => {
     await userEvent.selectOptions(screen.getByTitle('mode'), '2');
     await userEvent.click(screen.getByText('OK'));
 
-    expect(fix).toHaveBeenCalledWith(['mode', 2]);
+    expect(screen.getByText('Mode:').closest('button')).toHaveTextContent(
+      'Mode: Phrygian'
+    );
   });
 
-  it('calls close when Cancel is clicked', async () => {
-    const close = vi.fn();
+  it('does not change the fixed key/mode when Cancel is clicked', async () => {
     render(
-      <Modal
-        close={close}
-        value={0}
-        fix={() => {}}
-        fixedKey={-1}
-        fixedMode={-1}
-      />
+      <ProgressionProvider initialState={{ modalState: 0 }}>
+        <Modal />
+        <Controls />
+      </ProgressionProvider>
     );
 
+    await userEvent.selectOptions(screen.getByTitle('key'), 'G');
     await userEvent.click(screen.getByText('Cancel'));
 
-    expect(close).toHaveBeenCalled();
+    expect(screen.getByText('Key:').closest('button')).toHaveTextContent(
+      'Key: Mixed'
+    );
   });
 });

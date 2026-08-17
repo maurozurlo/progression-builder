@@ -2,37 +2,39 @@ import React, { useState } from 'react';
 import styles from './Modal.module.css';
 
 import { toneNames, modeNames } from '../helpers/music';
+import { useProgressionContext } from '../context/ProgressionContext';
 
 type FixValue = ['key', string | number] | ['mode', number];
 
-interface ModalProps {
-  close: () => void;
-  value: number;
-  fix: (val: FixValue) => void;
-  fixedKey: string | number;
-  fixedMode: string | number;
-}
+const Modal = () => {
+  const {
+    modalState: value,
+    fixedKey: ctxFixedKey,
+    fixedMode: ctxFixedMode,
+    fix,
+    closeModal,
+  } = useProgressionContext();
 
-const Modal = (props: ModalProps) => {
   //Input
   const handleInput = (e: React.ChangeEvent<HTMLSelectElement>) => {
     switch (e.target.title) {
       case 'mode':
-        setFixedMode(e.target.value);
+        setFixedMode(Number(e.target.value));
         break;
       case 'key':
-        setFixedKey(e.target.value);
+        //Select values are always strings, so "Mixed" (option value -1) must be coerced back to a number to match the -1 sentinel used everywhere else
+        setFixedKey(e.target.value === '-1' ? -1 : e.target.value);
         break;
       default:
         return null;
     }
   };
 
-  const [fixedKey, setFixedKey] = useState(props.fixedKey);
-  const [fixedMode, setFixedMode] = useState(props.fixedMode);
+  const [fixedKey, setFixedKey] = useState(ctxFixedKey);
+  const [fixedMode, setFixedMode] = useState<string | number>(ctxFixedMode);
 
   const returnEitherKeyOrMode = (): FixValue => {
-    return props.value === 0 ? ['key', fixedKey] : ['mode', Number(fixedMode)];
+    return value === 0 ? ['key', fixedKey] : ['mode', Number(fixedMode)];
   };
 
   return (
@@ -40,8 +42,8 @@ const Modal = (props: ModalProps) => {
       <div className={styles.modalCard}>
         {/* Fixed Mode */}
         <div className={styles.inputContainer}>
-          <label>Fixed {props.value === 0 ? 'Key' : 'Mode'}</label>
-          {props.value === 0 ? (
+          <label>Fixed {value === 0 ? 'Key' : 'Mode'}</label>
+          {value === 0 ? (
             <select
               className={styles.selectInput}
               title="key"
@@ -76,12 +78,12 @@ const Modal = (props: ModalProps) => {
         {/* Fixed Key */}
 
         <div className={styles.buttonContainer}>
-          <button className={styles.outline} onClick={props.close}>
+          <button className={styles.outline} onClick={closeModal}>
             Cancel
           </button>
           <button
             className={styles.primary}
-            onClick={() => props.fix(returnEitherKeyOrMode())}
+            onClick={() => fix(returnEitherKeyOrMode())}
           >
             OK
           </button>

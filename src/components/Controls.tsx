@@ -1,44 +1,24 @@
-import { useState } from 'react';
 import styles from './Controls.module.css';
 import { modeNames } from '../helpers/music';
+import { useProgressionContext } from '../context/ProgressionContext';
 
-interface ControlsProps {
-  keyClick: (pressed: boolean) => void;
-  modeClick: (pressed: boolean) => void;
-  fixedKey: number | string;
-  fixedMode: number;
-}
-
-const Controls = (props: ControlsProps) => {
-  //Key
-  const [pressedKey, setPressedKey] = useState(false);
-
-  const editClassK = () => {
-    setPressedKey(!pressedKey);
-    props.keyClick(!pressedKey);
-  };
-  //Mode
-  const [pressedMode, setPressedMode] = useState(false);
-
-  const editClassM = () => {
-    setPressedMode(!pressedMode);
-    props.modeClick(!pressedMode);
-  };
+const Controls = () => {
+  const { fixedKey, fixedMode, openModal } = useProgressionContext();
 
   return (
     <div className={styles.mainControls}>
       <button
-        onClick={editClassK}
-        className={props.fixedKey !== -1 ? styles.pressed : undefined}
+        onClick={() => openModal(0)}
+        className={fixedKey !== -1 ? styles.pressed : undefined}
       >
-        <strong>Key:</strong> {props.fixedKey !== -1 ? props.fixedKey : 'Mixed'}
+        <strong>Key:</strong> {fixedKey !== -1 ? fixedKey : 'Mixed'}
       </button>
       <button
-        onClick={editClassM}
-        className={props.fixedMode !== -1 ? styles.pressed : undefined}
+        onClick={() => openModal(1)}
+        className={fixedMode !== -1 ? styles.pressed : undefined}
       >
         <strong>Mode:</strong>{' '}
-        {props.fixedMode !== -1 ? modeNames[props.fixedMode] : 'Mixed'}
+        {fixedMode !== -1 ? modeNames[fixedMode] : 'Mixed'}
       </button>
     </div>
   );

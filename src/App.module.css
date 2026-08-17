@@ -5,3 +5,24 @@
   margin: 0 auto;
   padding-bottom: 10vh;
 }
+
+.columns {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+}
+
+@media (min-width: 1000px) {
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(320px, 1fr));
+
+    align-items: start;
+    justify-content: stretch;
+  }
+
+  .wrapper {
+    max-width: 100%;
+  }
+}

@@ -19,3 +19,13 @@
 .wrapper button > img {
   max-width: 48px;
 }
+
+.triggerButton {
+  display: block;
+}
+
+@media (min-width: 1000px) {
+  .triggerButton {
+    display: none;
+  }
+}

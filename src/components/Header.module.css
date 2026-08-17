@@ -6,7 +6,7 @@
   font-size: 0.8rem;
 }
 
-.logoContainer > h1 {
+.logoContainer>h1 {
   text-transform: uppercase;
   letter-spacing: 2px;
   font-weight: bold;
@@ -23,15 +23,13 @@
 
 .infoContainer {
   background-color: var(--black);
-  max-width: var(--max-width);
-  margin: 0 auto;
   border: 3px solid var(--black);
   padding: 2px 5px;
   font-size: 0.9rem;
 }
 
 .infoContainer small,
-.infoContainer small > a {
+.infoContainer small>a {
   color: var(--primary);
   text-decoration: none;
 }

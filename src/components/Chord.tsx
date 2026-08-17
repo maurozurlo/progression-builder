@@ -1,120 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import { useState, ChangeEvent } from 'react';
 import styles from './Chord.module.css';
 
 import * as theory from '../helpers/music';
 import Tooltip from './Tooltip';
+import { useProgressionContext } from '../context/ProgressionContext';
 
 interface ChordProps {
-  tone: string;
-  mode: number;
-  interval: number;
-  fixedMode: number;
-  fixedKey: number | string;
+  index: number;
 }
 
 const Chord = (props: ChordProps) => {
-  //Key
-  const [chordTone, setChordTone] = useState<string>(props.tone);
-  //Mode
-  const [chordMode, setChordMode] = useState<number | string>(props.mode);
-  //Interval
-  const [chordInterval, setChordInterval] = useState<number | string>(
-    props.interval
-  );
-  //Current chord
-  const [chord, setChord] = useState(
-    theory.calculateChord(props.tone, props.mode, props.interval)
-  );
-  //Chord list
-  const [chordList, setChordList] = useState(
-    theory.getChordInScale(props.tone, props.mode)
-  );
-  //Chord notes
-  const [notesInChord, setNotesInChord] = useState(
-    theory.getNotesInChord(chord)
-  );
+  const { list, fixedKey, fixedMode, setChordAt } = useProgressionContext();
+  const slot = list[props.index];
+
+  //Everything below is derived straight from context on every render instead of mirrored into local
+  //state, so external changes to list (Generator apply, addChord, etc) are always reflected immediately
+  const chordTone = fixedKey !== -1 ? (fixedKey as string) : slot.tone;
+  const chordMode = fixedMode !== -1 ? fixedMode : slot.mode;
+  const chordInterval = slot.interval;
+  const chord = theory.calculateChord(chordTone, chordMode, chordInterval);
+  const chordList = theory.getChordInScale(chordTone, chordMode);
+  const notesInChord = theory.getNotesInChord(chord);
+
   //Show tooltip
   const [showTooltip, setShowTooltip] = useState(false);
-  //Find out if there's a cleaner way to do this
 
-  const updateChord = (e?: React.ChangeEvent<HTMLSelectElement>) => {
-    let newChord;
-
-    if (typeof e !== 'undefined' && typeof e === 'object') {
-      switch (e.target.title) {
-        case 'key':
-          newChord = theory.calculateChord(
-            e.target.value,
-            chordMode,
-            chordInterval
-          );
-          setChordTone(e.target.value);
-          setChordList(theory.getChordInScale(e.target.value, chordMode));
-          break;
-        case 'mode':
-          newChord = theory.calculateChord(
-            chordTone,
-            e.target.value,
-            chordInterval
-          );
-          setChordMode(e.target.value);
-          setChordList(theory.getChordInScale(chordTone, e.target.value));
-          break;
-        case 'interval':
-          newChord = theory.calculateChord(
-            chordTone,
-            chordMode,
-            e.target.value
-          );
-          setChordInterval(e.target.value);
-          break;
-        default:
-          newChord = undefined;
-          break;
-      }
-      reRenderChord(newChord);
-    }
-    //Fix Key
-    if (props.fixedKey !== -1 && chordTone !== props.fixedKey) {
-      newChord = theory.calculateChord(
-        props.fixedKey as string,
-        chordMode,
-        chordInterval
-      );
-      setChordList(theory.getChordInScale(props.fixedKey as string, chordMode));
-      setChordTone(props.fixedKey as string);
-      reRenderChord(newChord);
-    }
-    //Fix Mode
-    if (props.fixedMode !== -1 && chordMode !== props.fixedMode) {
-      newChord = theory.calculateChord(
-        chordTone,
-        props.fixedMode,
-        chordInterval
-      );
-      setChordMode(props.fixedMode);
-      setChordList(theory.getChordInScale(chordTone, props.fixedMode));
-      reRenderChord(newChord);
-    }
+  const handleKeyChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setChordAt(props.index, { tone: e.target.value });
   };
 
-  const reRenderChord = (chord?: string) => {
-    setChord(chord as string);
-    updateNotes(chord as string);
+  const handleModeChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setChordAt(props.index, { mode: Number(e.target.value) });
   };
 
-  const updateNotes = (chord: string) => {
-    setNotesInChord(theory.getNotesInChord(chord));
+  const handleIntervalChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    setChordAt(props.index, { interval: Number(e.target.value) });
   };
 
   const handleClick = () => {
     setShowTooltip(!showTooltip);
   };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- pre-existing pattern used to sync fixedKey/fixedMode props into state every render; not touched by this migration
-    updateChord();
-  });
 
   return (
     <div className={styles.container}>
@@ -124,9 +49,9 @@ const Chord = (props: ChordProps) => {
           <select
             className={styles.selectInput}
             title="key"
-            onChange={updateChord}
+            onChange={handleKeyChange}
             value={chordTone}
-            disabled={props.fixedKey !== -1}
+            disabled={fixedKey !== -1}
           >
             {theory.toneNames.map((tone, i) => (
               <option key={'t' + i} value={tone}>
@@ -141,9 +66,9 @@ const Chord = (props: ChordProps) => {
           <select
             className={styles.selectInput}
             title="mode"
-            onChange={updateChord}
+            onChange={handleModeChange}
             value={chordMode}
-            disabled={props.fixedMode !== -1}
+            disabled={fixedMode !== -1}
           >
             {theory.modeNames.map((mode, i) => (
               <option key={'m' + i} value={i}>
@@ -158,7 +83,7 @@ const Chord = (props: ChordProps) => {
           <select
             className={styles.selectInput}
             title="interval"
-            onChange={updateChord}
+            onChange={handleIntervalChange}
             value={chordInterval}
           >
             {theory.intervalNames.map((interval, i) => (
