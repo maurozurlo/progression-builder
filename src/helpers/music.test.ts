@@ -1,0 +1,83 @@
+import { describe, expect, it } from 'vitest';
+import {
+  calculateChord,
+  getChordInScale,
+  getNotesInChord,
+  getIndexOfNote,
+  toneNames,
+  modeNames,
+  intervalNames,
+} from './music';
+
+describe('toneNames / modeNames / intervalNames', () => {
+  it('has 12 chromatic tones', () => {
+    expect(toneNames).toHaveLength(12);
+  });
+
+  it('has 7 modes and 7 interval names', () => {
+    expect(modeNames).toHaveLength(7);
+    expect(intervalNames).toHaveLength(7);
+  });
+});
+
+describe('calculateChord', () => {
+  it('returns the tonic chord (root, major) for interval 0 in Ionian', () => {
+    expect(calculateChord('C', 0, 0)).toBe('C');
+  });
+
+  it('returns a minor chord for the ii in a major scale', () => {
+    expect(calculateChord('C', 0, 1)).toBe('Dm');
+  });
+
+  it('returns a diminished chord for the vii in a major scale', () => {
+    expect(calculateChord('C', 0, 6)).toBe('Bdim');
+  });
+
+  it('wraps chromatically past B back to C', () => {
+    expect(calculateChord('B', 0, 0)).toBe('B');
+    expect(calculateChord('B', 0, 3)).toBe('E');
+  });
+
+  it('accepts numeric-string mode/interval values, as produced by <select> onChange', () => {
+    expect(calculateChord('C', '0', '1')).toBe('Dm');
+  });
+});
+
+describe('getChordInScale', () => {
+  it('lists all 7 chords of a major scale in order', () => {
+    expect(getChordInScale('C', 0)).toEqual([
+      'C ',
+      'Dm ',
+      'Em ',
+      'F ',
+      'G ',
+      'Am ',
+      'Bdim ',
+    ]);
+  });
+});
+
+describe('getNotesInChord', () => {
+  it('returns root/third/fifth for a plain major chord', () => {
+    expect(getNotesInChord('C')).toBe('C E G');
+  });
+
+  it('returns root/flat third/fifth for a minor chord', () => {
+    expect(getNotesInChord('Dm')).toBe('D F A');
+  });
+
+  it('handles sharp root notes', () => {
+    expect(getNotesInChord('C#')).toBe('C# F G#');
+  });
+});
+
+describe('getIndexOfNote', () => {
+  it('returns the chromatic index of a tone name', () => {
+    expect(getIndexOfNote('C')).toBe(0);
+    expect(getIndexOfNote('G')).toBe(7);
+  });
+
+  it('returns -1 for an unknown tone', () => {
+    expect(getIndexOfNote('X')).toBe(-1);
+  });
+});
