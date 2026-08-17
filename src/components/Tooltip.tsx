@@ -1,7 +1,11 @@
-import React from 'react';
 import styles from './Tooltip.module.css';
 
-const Tooltip = (props) => {
+interface TooltipProps {
+  chordNotes: string;
+  pop: boolean;
+}
+
+const Tooltip = (props: TooltipProps) => {
   const className = props.pop ? `${styles.container} ${styles.visible}` : styles.container;
   return <div className={className}>
     {props.chordNotes}

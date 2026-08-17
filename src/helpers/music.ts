@@ -6,29 +6,31 @@ export const modeNames = ["Ionian (Major)", "Dorian", "Phrygian", "Lydian", "Mix
 //Modes are saved as multidimensional arrays, where each interval has two values:
 //[0] Semitones from the root
 //[1] Quality of the chord
-const major = [[0, ''], [2, 'm'], [4, 'm'], [5, ''], [7, ''], [9, 'm'], [11, 'dim']];
-const dorian = [[0, 'm'], [2, 'm'], [3, ''], [5, ''], [7, 'm'], [9, 'dim'], [10, '']];
-const phrygian = [[0, 'm'], [1, ''], [3, ''], [5, 'm'], [7, 'dim'], [8, ''], [10, 'm']];
-const lydian = [[0, ''], [2, ''], [4, 'm'], [6, 'dim'], [7, ''], [9, 'm'], [11, 'm']];
-const myxolydian = [[0, ''], [2, 'm'], [4, 'dim'], [5, ''], [7, 'm'], [9, 'm'], [10, '']];
-const aeolian = [[0, 'm'], [2, 'dim'], [3, ''], [5, 'm'], [7, 'm'], [8, ''], [10, '']];
-const locrian = [[0, 'dim'], [1, ''], [3, 'm'], [5, 'm'], [6, ''], [8, ''], [10, 'm']];
+type ModeInterval = [number, string];
+const major: ModeInterval[] = [[0, ''], [2, 'm'], [4, 'm'], [5, ''], [7, ''], [9, 'm'], [11, 'dim']];
+const dorian: ModeInterval[] = [[0, 'm'], [2, 'm'], [3, ''], [5, ''], [7, 'm'], [9, 'dim'], [10, '']];
+const phrygian: ModeInterval[] = [[0, 'm'], [1, ''], [3, ''], [5, 'm'], [7, 'dim'], [8, ''], [10, 'm']];
+const lydian: ModeInterval[] = [[0, ''], [2, ''], [4, 'm'], [6, 'dim'], [7, ''], [9, 'm'], [11, 'm']];
+const myxolydian: ModeInterval[] = [[0, ''], [2, 'm'], [4, 'dim'], [5, ''], [7, 'm'], [9, 'm'], [10, '']];
+const aeolian: ModeInterval[] = [[0, 'm'], [2, 'dim'], [3, ''], [5, 'm'], [7, 'm'], [8, ''], [10, '']];
+const locrian: ModeInterval[] = [[0, 'dim'], [1, ''], [3, 'm'], [5, 'm'], [6, ''], [8, ''], [10, 'm']];
 //Saving the all mode arrays in a bigger array for further use
-const modes = [major, dorian, phrygian, lydian, myxolydian, aeolian, locrian];
+const modes: ModeInterval[][] = [major, dorian, phrygian, lydian, myxolydian, aeolian, locrian];
 
 //Chromatic scale / Note names
 export const toneNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-export const calculateChord = (key, mode, interval) => {
+export const calculateChord = (key: string, mode: number | string, interval: number | string): string => {
   let tone = toneNames.findIndex((element) => element === key);
-  let note = toneNames[checkifHigherThanTwelve(tone + modes[mode][interval][0])];
-  return `${note}${modes[mode][interval][1]}`;
+  let modeArr = modes[Number(mode)];
+  let note = toneNames[checkifHigherThanTwelve(tone + modeArr[Number(interval)][0])];
+  return `${note}${modeArr[Number(interval)][1]}`;
 }
 
-export const getChordInScale = (key, mode) => {
-  let list = [];
+export const getChordInScale = (key: string, mode: number | string): string[] => {
+  let list: string[] = [];
 
-  modes[mode].map(interval => {
+  modes[Number(mode)].map((interval: ModeInterval) => {
     let tone = toneNames.findIndex((element) => element === key);
     let note = toneNames[checkifHigherThanTwelve(tone + interval[0])];
     return list.push(`${note}${interval[1]} `);
@@ -36,8 +38,8 @@ export const getChordInScale = (key, mode) => {
   return list;
 }
 
-export const getNotesInChord = (chord) =>{
-  let list = [];
+export const getNotesInChord = (chord: string): string => {
+  let list: string[] = [];
   //Intervals
   const majorChord = [0,4,7];
   const minorChord = [0,3,7];
@@ -50,7 +52,7 @@ export const getNotesInChord = (chord) =>{
     isSharp = true;
   };
   //Get quality of the chord
-  let qualityNotes = [];
+  let qualityNotes: number[] = [];
   //This ternary checks if the Chord is sharp, in which case we should look for the third character of the string and not the second
   let arrayIndex = isSharp ? 2 : 1;
      switch(chord[arrayIndex]){
@@ -82,14 +84,14 @@ export const getNotesInChord = (chord) =>{
   return formattedString;
 }
 
-const checkifHigherThanTwelve = (val) => {
+const checkifHigherThanTwelve = (val: number): number => {
   if (val > 11) {
     val -= 12;
   }
   return val;
 }
 
-export const getIndexOfNote = (val) =>{
+export const getIndexOfNote = (val: string): number => {
   let tone = toneNames.findIndex((element) => element === val);
   return tone;
 }

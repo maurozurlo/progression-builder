@@ -1,10 +1,14 @@
-import React from 'react';
 import styles from './Toolbar.module.css';
 
 import add from '../img/add.svg';
 import del from '../img/delete.svg';
 
-const Toolbar = (props) => {
+interface ToolbarProps {
+  addChord: () => void;
+  deleteChord: () => void;
+}
+
+const Toolbar = (props: ToolbarProps) => {
   return (
     <div className={styles.container}>
       <div className={styles.wrapper}>

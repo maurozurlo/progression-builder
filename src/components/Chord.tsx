@@ -4,13 +4,21 @@ import styles from './Chord.module.css';
 import * as theory from '../helpers/music'
 import Tooltip from './Tooltip'
 
-const Chord = (props) => {
+interface ChordProps {
+  tone: string;
+  mode: number;
+  interval: number;
+  fixedMode: number;
+  fixedKey: number | string;
+}
+
+const Chord = (props: ChordProps) => {
   //Key
-  const [chordTone, setChordTone] = useState(props.tone);
+  const [chordTone, setChordTone] = useState<string>(props.tone);
   //Mode
-  const [chordMode, setChordMode] = useState(props.mode);
+  const [chordMode, setChordMode] = useState<number | string>(props.mode);
   //Interval
-  const [chordInterval, setChordInterval] = useState(props.interval);
+  const [chordInterval, setChordInterval] = useState<number | string>(props.interval);
   //Current chord
   const [chord, setChord] = useState(theory.calculateChord(props.tone, props.mode, props.interval));
   //Chord list
@@ -25,7 +33,7 @@ const Chord = (props) => {
     updateChord()
   })
 
-  const updateChord = (e) => {
+  const updateChord = (e?: React.ChangeEvent<HTMLSelectElement>) => {
     let newChord;
     
       if(typeof e !== 'undefined' && typeof e === 'object'){
@@ -52,9 +60,9 @@ const Chord = (props) => {
     }
     //Fix Key
     if(props.fixedKey !== -1 && chordTone !== props.fixedKey){
-      newChord = theory.calculateChord(props.fixedKey,chordMode,chordInterval);
-      setChordList(theory.getChordInScale(props.fixedKey,chordMode));
-      setChordTone(props.fixedKey);
+      newChord = theory.calculateChord(props.fixedKey as string,chordMode,chordInterval);
+      setChordList(theory.getChordInScale(props.fixedKey as string,chordMode));
+      setChordTone(props.fixedKey as string);
       reRenderChord(newChord);
     }
     //Fix Mode
@@ -66,12 +74,12 @@ const Chord = (props) => {
     }
   }
 
-  const reRenderChord = (chord) =>{
-    setChord(chord);
-    updateNotes(chord);
+  const reRenderChord = (chord?: string) =>{
+    setChord(chord as string);
+    updateNotes(chord as string);
   }
 
-  const updateNotes = (chord) => {
+  const updateNotes = (chord: string) => {
     setNotesInChord(theory.getNotesInChord(chord))
   }
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import styles from './Header.module.css';
 
 import logo from '../img/pb-logo.svg';

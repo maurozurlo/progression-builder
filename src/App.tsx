@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styles from './App.module.css';
 //Components
 import Header from './components/Header';
@@ -7,8 +7,16 @@ import Controls from './components/Controls';
 import Chord from './components/Chord';
 import Toolbar from './components/Toolbar';
 
+interface Chord {
+  tone: string;
+  mode: number;
+  interval: number;
+}
+
+type FixValue = ['key', string | number] | ['mode', number];
+
 function App() {
-  const defaultChord = {
+  const defaultChord: Chord = {
     tone: 'C',      //C
     mode: 0,     // Ionian (major)
     interval: 0 // I
@@ -17,7 +25,7 @@ function App() {
   //Fixed Key
   //-1: Key is not fixed
   //0-11: toneNames[]
-  const [fixedKey, setFixedKey] = useState(-1);
+  const [fixedKey, setFixedKey] = useState<number | string>(-1);
   //Fixed Mode
   const [fixedMode, setFixedMode] = useState(-1);
   //Modal
@@ -29,13 +37,13 @@ function App() {
   const openModalKey = () => setModalState(0);
   const openModalMode = () => setModalState(1);
 
-  const fix = (val) => {
+  const fix = (val: FixValue) => {
     closeModal();
     val[0] === 'key' ? setFixedKey(val[1]) : setFixedMode(val[1]);
   }
 
   //Chord list
-  const [list, setList] = useState([defaultChord]);
+  const [list, setList] = useState<Chord[]>([defaultChord]);
   const maxChords = 12;
   //Functions
   const addChord = () => {

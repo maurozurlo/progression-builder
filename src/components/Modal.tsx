@@ -3,10 +3,20 @@ import styles from './Modal.module.css';
 
 import { toneNames, modeNames } from '../helpers/music'
 
-const Modal = (props) => {
+type FixValue = ['key', string | number] | ['mode', number];
+
+interface ModalProps {
+  close: () => void;
+  value: number;
+  fix: (val: FixValue) => void;
+  fixedKey: string | number;
+  fixedMode: string | number;
+}
+
+const Modal = (props: ModalProps) => {
   //Input
-  const handleInput = (e) => {
-    
+  const handleInput = (e: React.ChangeEvent<HTMLSelectElement>) => {
+
     switch (e.target.title) {
       case 'mode':
         setFixedMode(e.target.value);
@@ -22,10 +32,8 @@ const Modal = (props) => {
   const [fixedKey, setFixedKey] = useState(props.fixedKey);
   const [fixedMode, setFixedMode] = useState(props.fixedMode);
 
-  const returnEitherKeyOrMode = () => {
-    let val = [];
-    props.value === 0 ? val = ['key', fixedKey] : val = ['mode', Number(fixedMode)];
-    return val;
+  const returnEitherKeyOrMode = (): FixValue => {
+    return props.value === 0 ? ['key', fixedKey] : ['mode', Number(fixedMode)];
   }
 
   

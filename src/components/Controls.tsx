@@ -1,8 +1,15 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import styles from './Controls.module.css';
 import { modeNames } from '../helpers/music'
 
-const Controls = (props) => {
+interface ControlsProps {
+  keyClick: (pressed: boolean) => void;
+  modeClick: (pressed: boolean) => void;
+  fixedKey: number | string;
+  fixedMode: number;
+}
+
+const Controls = (props: ControlsProps) => {
   //Key
   const [pressedKey, setPressedKey] = useState(false);
 
