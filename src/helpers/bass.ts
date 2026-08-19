@@ -8,9 +8,14 @@ export const buildBassChordNotes = (
   fixedMode: number,
   octave = 2
 ): BassChordNotes => {
-  const tone = fixedKey !== -1 ? (fixedKey as string) : chord.tone;
-  const mode = fixedMode !== -1 ? fixedMode : chord.mode;
-  const symbol = calculateChord(tone, mode, chord.interval);
+  let symbol: string;
+  if (chord.symbol) {
+    symbol = chord.symbol;
+  } else {
+    const tone = fixedKey !== -1 ? (fixedKey as string) : chord.tone;
+    const mode = fixedMode !== -1 ? fixedMode : chord.mode;
+    symbol = calculateChord(tone, mode, chord.interval);
+  }
   const notes = getNotesInChord(symbol).split(' ');
 
   const root: VoicedNote = { note: notes[0], octave };

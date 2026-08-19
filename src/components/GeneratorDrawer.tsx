@@ -5,23 +5,31 @@ import {
   generateFullyRandom,
   generateSmart,
   buildChordsFromDegrees,
+  buildMoodPairChords,
 } from '../helpers/generator';
 import { commonProgressions } from '../data/commonProgressions';
+import { moodProgressions } from '../data/moodProgressions';
+import { moodChordPairs } from '../data/moodChordPairs';
 import { useProgressionContext } from '../context/ProgressionContext';
-import { Genre, genreLabels } from '../types/music';
+import { Genre, genreLabels, KeyRelation, keyRelationLabels } from '../types/music';
 import { generateSong } from '../helpers/songGenerator';
 
-type Tab = 'random' | 'smart' | 'common' | 'genre';
+type Tab = 'random' | 'smart' | 'common' | 'genre' | 'mood';
+type MoodSubTab = 'progressions' | 'pairs';
 
 const genres = Object.keys(genreLabels) as Genre[];
+const keyRelations = Object.keys(keyRelationLabels) as KeyRelation[];
 
 const GeneratorDrawer = () => {
   const { fixedKey, fixedMode, applyGenerated, applyGeneratedSong, maxChords, meter } =
     useProgressionContext();
   const [songGenre, setSongGenre] = useState<Genre>('pop');
   const [songBars, setSongBars] = useState<4 | 8>(4);
+  const [chorusKeyRelation, setChorusKeyRelation] =
+    useState<KeyRelation>('otherScale');
 
   const [tab, setTab] = useState<Tab>('random');
+  const [moodSubTab, setMoodSubTab] = useState<MoodSubTab>('progressions');
   const [length, setLength] = useState(4);
   const [tone, setTone] = useState<string>(
     fixedKey !== -1 ? (fixedKey as string) : 'C'
@@ -90,6 +98,12 @@ const GeneratorDrawer = () => {
         >
           Genre
         </button>
+        <button
+          className={tab === 'mood' ? styles.active : undefined}
+          onClick={() => setTab('mood')}
+        >
+          Mood
+        </button>
       </div>
 
       {tab === 'genre' ? (
@@ -117,17 +131,137 @@ const GeneratorDrawer = () => {
               <option value={8}>8 (verse + chorus)</option>
             </select>
           </div>
+          {songBars === 8 && (
+            <div className={styles.field}>
+              <label>Chorus key</label>
+              <select
+                value={chorusKeyRelation}
+                onChange={(e) =>
+                  setChorusKeyRelation(e.target.value as KeyRelation)
+                }
+              >
+                {keyRelations.map((relation) => (
+                  <option key={relation} value={relation}>
+                    {keyRelationLabels[relation]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <p className={styles.helperText}>
             Also sets strum, bass, drums, melody and tempo.
           </p>
           <button
             className={styles.shuffleButton}
             onClick={() =>
-              applyGeneratedSong(generateSong(songGenre, meter, songBars))
+              applyGeneratedSong(
+                generateSong(
+                  songGenre,
+                  meter,
+                  songBars,
+                  songBars === 8 ? chorusKeyRelation : undefined
+                )
+              )
             }
           >
             Generate Song
           </button>
+        </>
+      ) : tab === 'mood' ? (
+        <>
+          <div className={styles.tabs}>
+            <button
+              className={
+                moodSubTab === 'progressions' ? styles.active : undefined
+              }
+              onClick={() => setMoodSubTab('progressions')}
+            >
+              Progressions
+            </button>
+            <button
+              className={moodSubTab === 'pairs' ? styles.active : undefined}
+              onClick={() => setMoodSubTab('pairs')}
+            >
+              Chord Pairs
+            </button>
+          </div>
+
+          <div className={styles.field}>
+            <label>Key</label>
+            <select
+              value={tone}
+              onChange={(e) => setTone(e.target.value)}
+              disabled={fixedKey !== -1}
+            >
+              {toneNames.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {moodSubTab === 'progressions' ? (
+            <>
+              <div className={styles.field}>
+                <label>Mode</label>
+                <select
+                  value={mode}
+                  onChange={(e) => setMode(Number(e.target.value))}
+                  disabled={fixedMode !== -1}
+                >
+                  {modeNames.map((m, i) => (
+                    <option key={m} value={i}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.templateList}>
+                {moodProgressions.map((template) => (
+                  <div key={template.id} className={styles.templateItem}>
+                    <span>
+                      {template.name}:{' '}
+                      {template.degrees
+                        .map((degree) => calculateChord(tone, mode, degree))
+                        .join(' - ')}
+                    </span>
+                    <button
+                      onClick={() =>
+                        applyGenerated(
+                          buildChordsFromDegrees(template.degrees, tone, mode),
+                          'replace'
+                        )
+                      }
+                    >
+                      Apply
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className={styles.templateList}>
+              {moodChordPairs.map((pair) => (
+                <div key={pair.id} className={styles.templateItem}>
+                  <span>
+                    {pair.name}:{' '}
+                    {buildMoodPairChords(pair, tone)
+                      .map((chord) => chord.symbol)
+                      .join(' - ')}
+                  </span>
+                  <button
+                    onClick={() =>
+                      applyGenerated(buildMoodPairChords(pair, tone), 'replace')
+                    }
+                  >
+                    Apply
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </>
       ) : tab !== 'common' ? (
         <>

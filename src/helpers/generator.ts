@@ -1,5 +1,11 @@
-import { getFunctionsInScale, ChordFunction } from './music';
-import { Chord } from '../types/music';
+import {
+  getFunctionsInScale,
+  ChordFunction,
+  calculateChord,
+  transposeTone,
+  buildChordSymbol,
+} from './music';
+import { Chord, MoodChordPair } from '../types/music';
 
 export const generateFullyRandom = (length: number): number[] =>
   Array.from({ length }, () => Math.floor(Math.random() * 7));
@@ -68,3 +74,30 @@ export const buildChordsFromDegrees = (
   tone: string,
   mode: number
 ): Chord[] => degrees.map((interval) => ({ tone, mode, interval }));
+
+//Builds an absolute, chromatic two-chord pair from a mood shorthand (e.g. "M2M" -> major chord,
+//up a major 2nd, major chord). Both chords carry an explicit `symbol` so they play at their own
+//root regardless of the current key/mode or a fixed-key override.
+export const buildMoodPairChords = (
+  pair: MoodChordPair,
+  rootTone: string
+): Chord[] => [
+  { tone: rootTone, mode: 0, interval: 0, symbol: buildChordSymbol(rootTone, pair.firstQuality) },
+  {
+    tone: rootTone,
+    mode: 0,
+    interval: 0,
+    symbol: buildChordSymbol(
+      transposeTone(rootTone, pair.semitones),
+      pair.secondQuality
+    ),
+  },
+];
+
+//Resolves each chord's diatonic symbol and bakes it in, so the list stays in its own key even
+//if it's later concatenated with chords under a different fixed key/mode (e.g. a chorus section).
+export const bakeChordSymbols = (chords: Chord[]): Chord[] =>
+  chords.map((chord) => ({
+    ...chord,
+    symbol: chord.symbol ?? calculateChord(chord.tone, chord.mode, chord.interval),
+  }));

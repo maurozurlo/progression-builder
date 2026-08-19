@@ -1,7 +1,7 @@
-import { Chord, Genre, VoicingStyle } from '../types/music';
-import { toneNames } from './music';
+import { Chord, Genre, KeyRelation, VoicingStyle } from '../types/music';
+import { toneNames, getRelatedKeys } from './music';
 import { Meter } from './playback';
-import { buildChordsFromDegrees } from './generator';
+import { buildChordsFromDegrees, bakeChordSymbols } from './generator';
 import { genreProgressions } from '../data/genreProgressions';
 import { genreTempoRanges, genreDefaultMode } from '../data/genreTempo';
 import { getStrumPatternsByGenre } from '../data/strumPatterns';
@@ -34,13 +34,28 @@ const extendToBars = (degrees: number[], bars: number): number[] =>
 export const generateSong = (
   genre: Genre,
   meter: Meter = '4/4',
-  bars = 4
+  bars = 4,
+  chorusKeyRelation?: KeyRelation
 ): GeneratedSong => {
-  const progression = pick(genreProgressions[genre]);
   const tone = pick(toneNames);
   const mode = genreDefaultMode[genre];
-  const degrees = extendToBars(progression.degrees, bars);
-  const chords = buildChordsFromDegrees(degrees, tone, mode);
+
+  //An 8-bar song splits into a 4-bar verse (in the song's own key/mode) plus a 4-bar chorus,
+  //optionally in a related key -- baked to explicit chord symbols so it keeps that key even if
+  //the app's global fixed-key/mode is set to something else.
+  const verseBars = bars === 8 && chorusKeyRelation ? 4 : bars;
+  const verseDegrees = extendToBars(pick(genreProgressions[genre]).degrees, verseBars);
+  let chords = buildChordsFromDegrees(verseDegrees, tone, mode);
+
+  if (bars === 8 && chorusKeyRelation) {
+    const related = getRelatedKeys(tone, mode)[chorusKeyRelation];
+    const chorusDegrees = extendToBars(pick(genreProgressions[genre]).degrees, 4);
+    const chorusChords = bakeChordSymbols(
+      buildChordsFromDegrees(chorusDegrees, related.tone, related.mode)
+    );
+    chords = [...chords, ...chorusChords];
+  }
+
   const strum = pick(getStrumPatternsByGenre(meter, genre));
   const bass = pick(getBassPatternsByGenre(meter, genre));
   const drum = pick(getDrumPatternsByGenre(meter, genre));

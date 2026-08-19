@@ -9,6 +9,9 @@ import {
   toneNames,
   modeNames,
   intervalNames,
+  transposeTone,
+  buildChordSymbol,
+  getRelatedKeys,
 } from './music';
 
 describe('toneNames / modeNames / intervalNames', () => {
@@ -95,5 +98,48 @@ describe('getChordFunction', () => {
 describe('getFunctionsInScale', () => {
   it('returns a function per degree, mode-independent', () => {
     expect(getFunctionsInScale()).toEqual(['T', 'S', 'T', 'S', 'D', 'T', 'D']);
+  });
+});
+
+describe('transposeTone', () => {
+  it('transposes within the chromatic scale', () => {
+    expect(transposeTone('C', 2)).toBe('D');
+    expect(transposeTone('C', 7)).toBe('G');
+  });
+
+  it('wraps around past B', () => {
+    expect(transposeTone('B', 2)).toBe('C#');
+  });
+
+  it('wraps negative semitone counts', () => {
+    expect(transposeTone('C', -1)).toBe('B');
+  });
+});
+
+describe('buildChordSymbol', () => {
+  it('builds a plain symbol for major chords', () => {
+    expect(buildChordSymbol('C', 'major')).toBe('C');
+  });
+
+  it('appends "m" for minor chords', () => {
+    expect(buildChordSymbol('C', 'minor')).toBe('Cm');
+  });
+});
+
+describe('getRelatedKeys', () => {
+  it('relates C Ionian to A Aeolian as the same-scale key', () => {
+    expect(getRelatedKeys('C', 0).sameScale).toEqual({ tone: 'A', mode: 5 });
+  });
+
+  it('keeps the tonic for the other-scale (parallel) relation', () => {
+    expect(getRelatedKeys('C', 0).otherScale).toEqual({ tone: 'C', mode: 5 });
+  });
+
+  it('keeps the tonic and cycles the mode for the same-tone relation', () => {
+    expect(getRelatedKeys('C', 0).sameTone).toEqual({ tone: 'C', mode: 1 });
+  });
+
+  it('moves a fifth up for the neighboring-tone relation', () => {
+    expect(getRelatedKeys('C', 0).neighborTone).toEqual({ tone: 'G', mode: 0 });
   });
 });

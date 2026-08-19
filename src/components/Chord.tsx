@@ -18,7 +18,8 @@ const Chord = (props: ChordProps) => {
   const chordTone = fixedKey !== -1 ? (fixedKey as string) : slot.tone;
   const chordMode = fixedMode !== -1 ? fixedMode : slot.mode;
   const chordInterval = slot.interval;
-  const chord = theory.calculateChord(chordTone, chordMode, chordInterval);
+  const chord =
+    slot.symbol ?? theory.calculateChord(chordTone, chordMode, chordInterval);
   const chordList = theory.getChordInScale(chordTone, chordMode);
   const notesInChord = theory.getNotesInChord(chord);
 

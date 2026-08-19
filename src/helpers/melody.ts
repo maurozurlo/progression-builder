@@ -144,10 +144,25 @@ export const buildMelodyLine = (
   const curve = buildTensionCurve(phrase.length);
 
   const bars = phrase.map((chord, i) => {
-    const tone = fixedKey !== -1 ? (fixedKey as string) : chord.tone;
-    const mode = fixedMode !== -1 ? fixedMode : chord.mode;
     const isPhraseEdge = i === 0 || i === phrase.length - 1;
-    const anchorDegree = pickAnchorDegree(chord.interval, isPhraseEdge);
+    //Chromatic chords (symbol set) have no diatonic scale of their own -- fall back to the
+    //root note in an assumed major/minor mode (inferred from the symbol's quality) and anchor
+    //the motif on the root, since pickAnchorDegree's diatonic root/third/fifth math doesn't apply.
+    const tone = chord.symbol
+      ? chord.symbol.replace(/m$/, '')
+      : fixedKey !== -1
+        ? (fixedKey as string)
+        : chord.tone;
+    const mode = chord.symbol
+      ? chord.symbol.endsWith('m')
+        ? 5
+        : 0
+      : fixedMode !== -1
+        ? fixedMode
+        : chord.mode;
+    const anchorDegree = chord.symbol
+      ? 0
+      : pickAnchorDegree(chord.interval, isPhraseEdge);
     const varied = varyMotif(motif, curve[i]);
     return applyMotifToChord(varied, tone, mode, anchorDegree, octave);
   });

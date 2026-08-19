@@ -62,13 +62,16 @@ const SamplerDrawer = () => {
     const voicedChords = buildVoicedChords(list, fixedKey, fixedMode, voicingId);
     const chordsForExport = chordsOn ? voicedChords : voicedChords.map(() => []);
 
+    const strum = getStrumPatterns(meter).find((p) => p.id === patternId);
+
     const blob = buildMidiBlob(
       chordsForExport,
       bpm,
       meter === '4/4' ? 4 : 3,
       bass,
       drums,
-      melody
+      melody,
+      strum
     );
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

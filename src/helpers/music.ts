@@ -1,4 +1,4 @@
-import { VoicingStyle } from '../types/music';
+import { VoicingStyle, ChordQualityName, KeyRelation } from '../types/music';
 
 //Intervals
 export const intervalNames = [
@@ -236,6 +236,39 @@ export const getIndexOfNote = (val: string): number => {
   return tone;
 };
 
+export const transposeTone = (tone: string, semitones: number): string => {
+  const index = toneNames.findIndex((element) => element === tone);
+  return toneNames[((index + semitones) % 12 + 12) % 12];
+};
+
+export const buildChordSymbol = (
+  root: string,
+  quality: ChordQualityName
+): string => `${root}${quality === 'minor' ? 'm' : ''}`;
+
+//Every mode belongs to a "major-family" (brighter, built on the major triad) or a
+//"minor-family" (darker, built on the minor triad); relating two modes for the "same
+//scale"/"other scale" suggestions pairs each family with Ionian (0) or Aeolian (5).
+const majorFamilyModes = [0, 3, 4]; // Ionian, Lydian, Mixolydian
+const relatedModeIndex = (mode: number): number =>
+  majorFamilyModes.includes(mode) ? 5 : 0;
+
+export const getRelatedKeys = (
+  tone: string,
+  mode: number
+): Record<KeyRelation, { tone: string; mode: number }> => {
+  const targetMode = relatedModeIndex(mode);
+  return {
+    sameScale: {
+      tone: transposeTone(tone, major[targetMode][0] - major[mode][0]),
+      mode: targetMode,
+    },
+    otherScale: { tone, mode: targetMode },
+    sameTone: { tone, mode: (mode + 1) % 7 },
+    neighborTone: { tone: transposeTone(tone, 7), mode },
+  };
+};
+
 export type ChordFunction = 'T' | 'S' | 'D';
 
 export const getChordFunction = (interval: number): ChordFunction => {
@@ -259,4 +292,7 @@ export default {
   getIndexOfNote,
   getChordFunction,
   getFunctionsInScale,
+  transposeTone,
+  buildChordSymbol,
+  getRelatedKeys,
 };

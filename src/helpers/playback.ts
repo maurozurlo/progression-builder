@@ -19,6 +19,7 @@ export const buildVoicedChords = (
 ): VoicedNote[][] =>
   smoothProgressionOctaves(
     list.map((chord) => {
+      if (chord.symbol) return getVoicedChordNotes(chord.symbol, voicing);
       const tone = fixedKey !== -1 ? (fixedKey as string) : chord.tone;
       const mode = fixedMode !== -1 ? fixedMode : chord.mode;
       const symbol = calculateChord(tone, mode, chord.interval);

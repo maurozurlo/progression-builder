@@ -2,6 +2,10 @@ export interface Chord {
   tone: string;
   mode: number;
   interval: number;
+  /** When set, this is an absolute chord symbol (e.g. "Ebm") that bypasses the diatonic
+   * tone/mode/interval lookup and the app's fixed-key/mode override — used for chromatic
+   * mood chord pairs and for song sections (e.g. a chorus) written in a different key. */
+  symbol?: string;
 }
 
 export type Genre =
@@ -55,6 +59,26 @@ export interface ProgressionTemplate {
   genre: Genre;
   degrees: number[];
 }
+
+export type ChordQualityName = 'major' | 'minor';
+
+export interface MoodChordPair {
+  id: string;
+  name: string;
+  mood: string;
+  firstQuality: ChordQualityName;
+  semitones: number;
+  secondQuality: ChordQualityName;
+}
+
+export type KeyRelation = 'sameScale' | 'otherScale' | 'sameTone' | 'neighborTone';
+
+export const keyRelationLabels: Record<KeyRelation, string> = {
+  sameScale: 'Same scale',
+  otherScale: 'Other scale',
+  sameTone: 'Same tone',
+  neighborTone: 'Neighboring tone',
+};
 
 export interface VoicedNote {
   note: string;

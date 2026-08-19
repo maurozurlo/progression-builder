@@ -98,7 +98,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--primary);
-  font-size: calc(0.5em + 1vw);
+  font-size: clamp(0.875rem, 0.5em + 1vw, 1.125rem);
 }
 
 code {
