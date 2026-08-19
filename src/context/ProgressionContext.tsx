@@ -7,7 +7,8 @@ import {
   ReactNode,
 } from 'react';
 import * as Tone from 'tone';
-import { Chord, MelodyGenre } from '../types/music';
+import { Chord, MelodyGenre, VoicingStyle } from '../types/music';
+import { GeneratedSong } from '../helpers/songGenerator';
 import { buildBassLine } from '../helpers/bass';
 import { buildMelodyLine } from '../helpers/melody';
 import {
@@ -53,6 +54,7 @@ export interface ProgressionState {
   bassPatternId: string;
   drumPatternId: string;
   melodyGenre: '' | MelodyGenre;
+  voicingId: VoicingStyle;
 }
 
 interface ProgressionContextValue extends ProgressionState {
@@ -66,6 +68,7 @@ interface ProgressionContextValue extends ProgressionState {
   openModal: (n: number) => void;
   closeModal: () => void;
   applyGenerated: (chords: Chord[], mode: 'replace' | 'append') => void;
+  applyGeneratedSong: (song: GeneratedSong) => void;
   toggleSampler: () => void;
   toggleGenerator: () => void;
   toggleBass: () => void;
@@ -78,6 +81,7 @@ interface ProgressionContextValue extends ProgressionState {
   setBassPatternId: (id: string) => void;
   setDrumPatternId: (id: string) => void;
   setMelodyGenre: (genre: '' | MelodyGenre) => void;
+  setVoicingId: (voicing: VoicingStyle) => void;
   togglePlay: () => void;
 }
 
@@ -155,6 +159,9 @@ export const ProgressionProvider = ({
   const [melodyGenre, setMelodyGenre] = useState<'' | MelodyGenre>(
     initialState?.melodyGenre ?? ''
   );
+  const [voicingId, setVoicingId] = useState<VoicingStyle>(
+    initialState?.voicingId ?? 'triad'
+  );
   const [isPlaying, setIsPlaying] = useState(false);
 
   const synthRef = useRef<Tone.PolySynth | null>(null);
@@ -199,6 +206,18 @@ export const ProgressionProvider = ({
       const next = mode === 'replace' ? chords : [...prev, ...chords];
       return next.slice(0, maxChords);
     });
+  };
+
+  const applyGeneratedSong = (song: GeneratedSong) => {
+    setList(song.chords);
+    setFixedKey(song.tone);
+    setFixedMode(song.mode);
+    setPatternId(song.patternId);
+    setBassPatternId(song.bassPatternId);
+    setDrumPatternId(song.drumPatternId);
+    setMelodyGenre(song.melodyGenre);
+    setVoicingId(song.voicingId);
+    handleSetBpm(song.bpm);
   };
 
   const toggleSampler = () => {
@@ -279,7 +298,7 @@ export const ProgressionProvider = ({
       const pattern = patterns.find((p) => p.id === patternId) ?? patterns[0];
       loopRef.current = scheduleProgression(
         synthRef.current,
-        buildChordPitches(list, fixedKey, fixedMode),
+        buildChordPitches(list, fixedKey, fixedMode, voicingId),
         pattern,
         bpm,
         meterTuple(meter)
@@ -365,6 +384,7 @@ export const ProgressionProvider = ({
     bassPatternId,
     drumPatternId,
     melodyGenre,
+    voicingId,
     chordsOn,
     meter,
   ]);
@@ -416,6 +436,7 @@ export const ProgressionProvider = ({
     bassPatternId,
     drumPatternId,
     melodyGenre,
+    voicingId,
     maxChords,
     isPlaying,
     setList,
@@ -426,6 +447,7 @@ export const ProgressionProvider = ({
     openModal,
     closeModal,
     applyGenerated,
+    applyGeneratedSong,
     toggleSampler,
     toggleGenerator,
     toggleBass,
@@ -438,6 +460,7 @@ export const ProgressionProvider = ({
     setBassPatternId,
     setDrumPatternId,
     setMelodyGenre,
+    setVoicingId,
     togglePlay,
   };
 

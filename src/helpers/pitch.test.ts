@@ -24,7 +24,7 @@ describe('getVoicedChordNotes', () => {
   });
 
   it('respects a custom base octave', () => {
-    expect(getVoicedChordNotes('C', 3)).toEqual([
+    expect(getVoicedChordNotes('C', 'triad', 3)).toEqual([
       { note: 'C', octave: 3 },
       { note: 'E', octave: 3 },
       { note: 'G', octave: 3 },
@@ -44,11 +44,11 @@ describe('smoothProgressionOctaves', () => {
     const chords = [
       getVoicedChordNotes('C'), // C4 E4 G4
       // Same triad voiced a full octave higher, simulating an independently-anchored chord that drifted
-      getVoicedChordNotes('C', 5), // C5 E5 G5
+      getVoicedChordNotes('C', 'triad', 5), // C5 E5 G5
     ];
     const smoothed = smoothProgressionOctaves(chords);
     expect(smoothed[0]).toEqual(chords[0]);
-    expect(smoothed[1]).toEqual(getVoicedChordNotes('C', 4));
+    expect(smoothed[1]).toEqual(getVoicedChordNotes('C', 'triad', 4));
   });
 
   it('leaves chords already within a tritone of each other alone', () => {

@@ -8,12 +8,18 @@ import {
 } from '../helpers/generator';
 import { commonProgressions } from '../data/commonProgressions';
 import { useProgressionContext } from '../context/ProgressionContext';
+import { Genre, genreLabels } from '../types/music';
+import { generateSong } from '../helpers/songGenerator';
 
-type Tab = 'random' | 'smart' | 'common';
+type Tab = 'random' | 'smart' | 'common' | 'genre';
+
+const genres = Object.keys(genreLabels) as Genre[];
 
 const GeneratorDrawer = () => {
-  const { fixedKey, fixedMode, applyGenerated, maxChords } =
+  const { fixedKey, fixedMode, applyGenerated, applyGeneratedSong, maxChords, meter } =
     useProgressionContext();
+  const [songGenre, setSongGenre] = useState<Genre>('pop');
+  const [songBars, setSongBars] = useState<4 | 8>(4);
 
   const [tab, setTab] = useState<Tab>('random');
   const [length, setLength] = useState(4);
@@ -78,9 +84,52 @@ const GeneratorDrawer = () => {
         >
           Common
         </button>
+        <button
+          className={tab === 'genre' ? styles.active : undefined}
+          onClick={() => setTab('genre')}
+        >
+          Genre
+        </button>
       </div>
 
-      {tab !== 'common' ? (
+      {tab === 'genre' ? (
+        <>
+          <div className={styles.field}>
+            <label>Genre</label>
+            <select
+              value={songGenre}
+              onChange={(e) => setSongGenre(e.target.value as Genre)}
+            >
+              {genres.map((g) => (
+                <option key={g} value={g}>
+                  {genreLabels[g]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.field}>
+            <label>Bars</label>
+            <select
+              value={songBars}
+              onChange={(e) => setSongBars(Number(e.target.value) as 4 | 8)}
+            >
+              <option value={4}>4 (verse)</option>
+              <option value={8}>8 (verse + chorus)</option>
+            </select>
+          </div>
+          <p className={styles.helperText}>
+            Also sets strum, bass, drums, melody and tempo.
+          </p>
+          <button
+            className={styles.shuffleButton}
+            onClick={() =>
+              applyGeneratedSong(generateSong(songGenre, meter, songBars))
+            }
+          >
+            Generate Song
+          </button>
+        </>
+      ) : tab !== 'common' ? (
         <>
           <div className={styles.field}>
             <label>Length</label>

@@ -1,6 +1,6 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Progression Builder v0.2 by ElMiauro
+## Progression Builder v0.3 by ElMiauro
 
 ### Storytime
 
@@ -21,7 +21,8 @@ You will also see any lint errors in the console.
 
 Progression Builder (from now on, will be refer to as PB), helps you build musical progressions by showing you the chords corresponding to each key/scale/interval.<br />
 [https://www.musictheory.net/lessons/23](This might help you understand what on earth is going on)<br />
-Clicking the name of a chord shows you the notes it consists of.
+Clicking the name of a chord shows you the notes it consists of.<br />
+Now also generates full songs: melody, bass, and drum parts, with genre-based progressions, tempo, and chord voicings.
 
 ### FAQ
 
@@ -43,4 +44,4 @@ elMiauro was here
 
 ### Demo
 
-[https://progression-builder.netlify.com] (Try me here)
+[https://progression-builder.netlify.app] (Try me here)

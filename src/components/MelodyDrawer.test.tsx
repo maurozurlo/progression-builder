@@ -25,6 +25,6 @@ describe('MelodyDrawer', () => {
 
     expect(screen.getByText('Pop')).toBeInTheDocument();
     expect(screen.getByText('Jazz')).toBeInTheDocument();
-    expect(screen.getByText('Classical')).toBeInTheDocument();
+    expect(screen.getByText('Hip Hop')).toBeInTheDocument();
   });
 });

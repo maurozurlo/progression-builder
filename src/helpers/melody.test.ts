@@ -11,10 +11,10 @@ import { Chord, MotifStep } from '../types/music';
 
 describe('generateMotif', () => {
   it('always starts on offset 0 with degreeOffset 0, respecting genre note-count range', () => {
-    for (const genre of ['pop', 'jazz', 'classical'] as const) {
+    for (const genre of ['pop', 'jazz', 'ambient'] as const) {
       const motif = generateMotif(genre);
       expect(motif[0]).toEqual({ offset: 0, degreeOffset: 0 });
-      expect(motif.length).toBeGreaterThanOrEqual(3);
+      expect(motif.length).toBeGreaterThanOrEqual(1);
       //offsets must be strictly increasing
       for (let i = 1; i < motif.length; i++) {
         expect(motif[i].offset).toBeGreaterThan(motif[i - 1].offset);

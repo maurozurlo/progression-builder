@@ -64,6 +64,13 @@
   border-radius: 3px;
 }
 
+.helperText {
+  margin: 0 0 1em;
+  font-size: 0.85em;
+  color: var(--light);
+  opacity: 0.7;
+}
+
 .templateList {
   display: flex;
   flex-direction: column;

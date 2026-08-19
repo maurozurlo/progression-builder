@@ -6,6 +6,8 @@ import { buildMidiBlob } from '../helpers/midi';
 import { getStrumPatterns } from '../data/strumPatterns';
 import { getBassPatterns } from '../data/bassPatterns';
 import { getDrumPatterns } from '../data/drumPatterns';
+import { voicingStyles } from '../data/voicings';
+import { voicingLabels, VoicingStyle } from '../types/music';
 import { useProgressionContext } from '../context/ProgressionContext';
 
 type Meter = '4/4' | '3/4';
@@ -22,6 +24,8 @@ const SamplerDrawer = () => {
     bassPatternId,
     drumPatternId,
     melodyGenre,
+    voicingId,
+    setVoicingId,
     chordsOn,
     setChordsOn,
     bpm,
@@ -55,7 +59,7 @@ const SamplerDrawer = () => {
 
     //Drum bar-count derives from the chords array's length, so when chords are off it's kept the
     //same length with empty note lists per bar rather than passed as an empty array.
-    const voicedChords = buildVoicedChords(list, fixedKey, fixedMode);
+    const voicedChords = buildVoicedChords(list, fixedKey, fixedMode, voicingId);
     const chordsForExport = chordsOn ? voicedChords : voicedChords.map(() => []);
 
     const blob = buildMidiBlob(
@@ -107,6 +111,20 @@ const SamplerDrawer = () => {
           {getStrumPatterns(meter).map((pattern) => (
             <option key={pattern.id} value={pattern.id}>
               {pattern.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className={styles.field}>
+        <label>Chord voicings</label>
+        <select
+          value={voicingId}
+          onChange={(e) => setVoicingId(e.target.value as VoicingStyle)}
+        >
+          {voicingStyles.map((v) => (
+            <option key={v} value={v}>
+              {voicingLabels[v]}
             </option>
           ))}
         </select>

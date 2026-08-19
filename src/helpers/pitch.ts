@@ -1,11 +1,12 @@
 import { getNotesInChord, getIndexOfNote } from './music';
-import { VoicedNote } from '../types/music';
+import { VoicedNote, VoicingStyle } from '../types/music';
 
 export const getVoicedChordNotes = (
   chordSymbol: string,
+  voicing: VoicingStyle = 'triad',
   baseOctave = 4
 ): VoicedNote[] => {
-  const notes = getNotesInChord(chordSymbol).split(' ');
+  const notes = getNotesInChord(chordSymbol, voicing).split(' ');
   let octave = baseOctave;
   let previousIndex = -1;
   return notes.map((note) => {

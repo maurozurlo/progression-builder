@@ -1,3 +1,5 @@
+import { VoicingStyle } from '../types/music';
+
 //Intervals
 export const intervalNames = [
   'I (T)',
@@ -139,36 +141,62 @@ export const getChordInScale = (
   return list;
 };
 
-export const getNotesInChord = (chord: string): string => {
-  const list: string[] = [];
-  //Intervals
-  const majorChord = [0, 4, 7];
-  const minorChord = [0, 3, 7];
-  const dimChord = [0, 3, 6, 9];
-  //Get Tonic of chord
+type ChordQuality = 'major' | 'minor' | 'dim';
+
+const parseChordQuality = (
+  chord: string
+): { toneInWords: string; quality: ChordQuality } => {
   let toneInWords = chord[0];
   let isSharp = false;
   if (chord[1] === '#') {
     toneInWords += '#';
     isSharp = true;
   }
-  //Get quality of the chord
-  let qualityNotes: number[] = [];
   //This ternary checks if the Chord is sharp, in which case we should look for the third character of the string and not the second
   const arrayIndex = isSharp ? 2 : 1;
+  let quality: ChordQuality;
   switch (chord[arrayIndex]) {
-    case undefined:
-      qualityNotes = majorChord;
-      break;
     case 'm':
-      qualityNotes = minorChord;
+      quality = 'minor';
       break;
     case 'd':
-      qualityNotes = dimChord;
+      quality = 'dim';
       break;
     default:
-      qualityNotes = majorChord;
+      quality = 'major';
   }
+  return { toneInWords, quality };
+};
+
+const voicingIntervals: Record<VoicingStyle, Record<ChordQuality, number[]>> =
+  {
+    triad: { major: [0, 4, 7], minor: [0, 3, 7], dim: [0, 3, 6, 9] },
+    'triad-1st-inv': {
+      major: [4, 7, 12],
+      minor: [3, 7, 12],
+      dim: [3, 6, 12],
+    },
+    power: { major: [0, 7], minor: [0, 7], dim: [0, 6] },
+    shell: { major: [0, 4, 11], minor: [0, 3, 10], dim: [0, 3, 9] },
+    seventh: {
+      major: [0, 4, 7, 11],
+      minor: [0, 3, 7, 10],
+      dim: [0, 3, 6, 9],
+    },
+    ninth: {
+      major: [0, 4, 7, 11, 14],
+      minor: [0, 3, 7, 10, 14],
+      dim: [0, 3, 6, 9, 14],
+    },
+  };
+
+export const getNotesInChord = (
+  chord: string,
+  voicing: VoicingStyle = 'triad'
+): string => {
+  const list: string[] = [];
+  const { toneInWords, quality } = parseChordQuality(chord);
+  const qualityNotes = voicingIntervals[voicing][quality];
   //Get array value of root
   const tone = toneNames.findIndex((element) => element === toneInWords);
   //Map through the intervals to get the note names in a list

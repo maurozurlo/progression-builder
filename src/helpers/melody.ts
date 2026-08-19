@@ -39,7 +39,8 @@ const pickOffsets = (preset: GenrePreset): number[] => {
 //the whole progression via varyMotif, rather than generated independently per chord -- this repetition
 //is what makes the result read as a written melody instead of chord-tone noodling.
 export const generateMotif = (genre: MelodyGenre): MotifStep[] => {
-  const preset = melodyGenres[genre];
+  const presets = melodyGenres[genre];
+  const preset = presets[Math.floor(Math.random() * presets.length)];
   const offsets = pickOffsets(preset);
   let cumulative = 0;
   return offsets.map((offset, i) => {

@@ -51,6 +51,7 @@ describe('buildMultiTrackMidiBytes', () => {
     const bassPattern: BassPattern = {
       id: 'root-only',
       name: 'Root only',
+      genre: 'pop',
       steps: [{ offset: 0, degree: 'root' }],
     };
     const bytes = buildMultiTrackMidiBytes(
@@ -83,6 +84,7 @@ describe('buildMultiTrackMidiBytes', () => {
     const drumPattern: DrumPattern = {
       id: 'basic-rock',
       name: 'Basic Rock',
+      genre: 'pop',
       steps: [{ offset: 0, voice: 'kick' }],
     };
     const bytes = buildMultiTrackMidiBytes(
