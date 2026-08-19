@@ -27,8 +27,10 @@ vi.mock('tone', () => {
 
   return {
     start: vi.fn().mockResolvedValue(undefined),
+    loaded: vi.fn().mockResolvedValue(undefined),
     PolySynth: FakeNode,
     Synth: FakeNode,
+    Sampler: FakeNode,
     MembraneSynth: FakeNode,
     NoiseSynth: FakeNode,
     Filter: FakeNode,

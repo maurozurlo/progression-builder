@@ -164,9 +164,9 @@ export const ProgressionProvider = ({
   );
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const synthRef = useRef<Tone.PolySynth | null>(null);
-  const bassSynthRef = useRef<Tone.PolySynth | null>(null);
-  const melodySynthRef = useRef<Tone.PolySynth | null>(null);
+  const synthRef = useRef<Tone.Sampler | null>(null);
+  const bassSynthRef = useRef<Tone.Sampler | null>(null);
+  const melodySynthRef = useRef<Tone.Sampler | null>(null);
   const drumKitRef = useRef<DrumKit | null>(null);
   const loopRef = useRef<Tone.Loop | null>(null);
   const bassLoopRef = useRef<Tone.Loop | null>(null);
@@ -348,6 +348,7 @@ export const ProgressionProvider = ({
       );
     }
 
+    await Tone.loaded();
     startTransport(bpm);
     setIsPlaying(true);
   };

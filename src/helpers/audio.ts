@@ -17,11 +17,40 @@ export const initAudio = async (): Promise<void> => {
   await Tone.start();
 };
 
-export const createStrumSynth = (): Tone.PolySynth =>
-  new Tone.PolySynth(Tone.Synth).toDestination();
+//Real instrument samples (piano/guitar-acoustic/bass-electric) instead of synthesized tones.
+//Hosted by https://github.com/nbrosowsky/tonejs-instruments, sampled per semitone; Tone.Sampler
+//pitch-shifts to cover any gaps.
+const SAMPLE_BASE_URL = 'https://nbrosowsky.github.io/tonejs-instruments/samples';
+
+const SAMPLE_NOTES: Record<string, string[]> = {
+  piano: [1, 2, 3, 4, 5, 6, 7].flatMap((octave) =>
+    ['A', 'As', 'B', 'C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs'].map(
+      (note) => `${note}${octave}`
+    )
+  ),
+  'guitar-acoustic': [2, 3, 4].flatMap((octave) =>
+    ['A', 'As', 'B', 'C', 'Cs', 'D', 'Ds', 'E', 'F', 'Fs', 'G', 'Gs'].map(
+      (note) => `${note}${octave}`
+    )
+  ),
+  'bass-electric': ['E1', 'G1', 'As1', 'Cs2', 'E2', 'G2', 'As2', 'Cs3'],
+};
+
+const toSampleUrls = (instrument: string): Record<string, string> =>
+  Object.fromEntries(
+    SAMPLE_NOTES[instrument].map((note) => [
+      note.replace('s', '#'),
+      `${SAMPLE_BASE_URL}/${instrument}/${note}.mp3`,
+    ])
+  );
+
+const createSampler = (instrument: string): Tone.Sampler =>
+  new Tone.Sampler(toSampleUrls(instrument)).toDestination();
+
+export const createStrumSynth = (): Tone.Sampler => createSampler('piano');
 
 export const scheduleProgression = (
-  synth: Tone.PolySynth,
+  synth: Tone.Sampler,
   chords: string[][],
   pattern: StrumPattern,
   bpm: number,
@@ -47,11 +76,11 @@ export const scheduleProgression = (
   return loop;
 };
 
-export const createBassSynth = (): Tone.PolySynth =>
-  new Tone.PolySynth(Tone.Synth).toDestination();
+export const createBassSynth = (): Tone.Sampler =>
+  createSampler('bass-electric');
 
 export const scheduleBassLine = (
-  synth: Tone.PolySynth,
+  synth: Tone.Sampler,
   chords: BassChordNotes[],
   pattern: BassPattern,
   bpm: number,
@@ -77,13 +106,11 @@ export const scheduleBassLine = (
   return loop;
 };
 
-export const createMelodySynth = (): Tone.PolySynth =>
-  new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'triangle' },
-  }).toDestination();
+export const createMelodySynth = (): Tone.Sampler =>
+  createSampler('guitar-acoustic');
 
 export const scheduleMelodyLine = (
-  synth: Tone.PolySynth,
+  synth: Tone.Sampler,
   bars: MelodyEvent[][],
   bpm: number,
   meter: [number, number]
@@ -122,7 +149,7 @@ export const stopTransport = (): void => {
 
 //Notes already scheduled by triggerAttackRelease have their release tied to Transport time, so stopping
 //the Transport mid-note can leave it stuck on; forcing release on the synth guarantees silence.
-export const stopAllSound = (synth: Tone.PolySynth): void => {
+export const stopAllSound = (synth: Tone.Sampler): void => {
   Tone.Transport.cancel();
   synth.releaseAll();
 };
